@@ -33,174 +33,166 @@ pub struct Spinner {
 /// Some spinners to choose from. You could also make your own.
 pub fn line() -> Spinner {
     Spinner {
-    frames: vec![
-        "|".to_string(),
-        "/".to_string(),
-        "-".to_string(),
-        "\\".to_string(),
-    ],
-    fps: Duration::from_millis(100),
+        frames: vec![
+            "|".to_string(),
+            "/".to_string(),
+            "-".to_string(),
+            "\\".to_string(),
+        ],
+        fps: Duration::from_millis(100),
     }
 }
 
 /// A spinner of braille dots.
 pub fn dot() -> Spinner {
     Spinner {
-    frames: vec![
-        "⣾ ".to_string(),
-        "⣽ ".to_string(),
-        "⣻ ".to_string(),
-        "⢿ ".to_string(),
-        "⡿ ".to_string(),
-        "⣟ ".to_string(),
-        "⣯ ".to_string(),
-        "⣷ ".to_string(),
-    ],
-    fps: Duration::from_millis(100),
+        frames: vec![
+            "⣾ ".to_string(),
+            "⣽ ".to_string(),
+            "⣻ ".to_string(),
+            "⢿ ".to_string(),
+            "⡿ ".to_string(),
+            "⣟ ".to_string(),
+            "⣯ ".to_string(),
+            "⣷ ".to_string(),
+        ],
+        fps: Duration::from_millis(100),
     }
 }
 
 /// A mini braille-dot spinner.
 pub fn mini_dot() -> Spinner {
     Spinner {
-    frames: vec![
-        "⠋".to_string(),
-        "⠙".to_string(),
-        "⠹".to_string(),
-        "⠸".to_string(),
-        "⠼".to_string(),
-        "⠴".to_string(),
-        "⠦".to_string(),
-        "⠧".to_string(),
-        "⠇".to_string(),
-        "⠏".to_string(),
-    ],
-    fps: Duration::from_millis(83),
+        frames: vec![
+            "⠋".to_string(),
+            "⠙".to_string(),
+            "⠹".to_string(),
+            "⠸".to_string(),
+            "⠼".to_string(),
+            "⠴".to_string(),
+            "⠦".to_string(),
+            "⠧".to_string(),
+            "⠇".to_string(),
+            "⠏".to_string(),
+        ],
+        fps: Duration::from_millis(83),
     }
 }
 
 /// A jumping spinner.
 pub fn jump() -> Spinner {
     Spinner {
-    frames: vec![
-        "⢄".to_string(),
-        "⢂".to_string(),
-        "⢁".to_string(),
-        "⡁".to_string(),
-        "⡈".to_string(),
-        "⡐".to_string(),
-        "⡠".to_string(),
-    ],
-    fps: Duration::from_millis(100),
+        frames: vec![
+            "⢄".to_string(),
+            "⢂".to_string(),
+            "⢁".to_string(),
+            "⡁".to_string(),
+            "⡈".to_string(),
+            "⡐".to_string(),
+            "⡠".to_string(),
+        ],
+        fps: Duration::from_millis(100),
     }
 }
 
 /// A pulsing block spinner.
 pub fn pulse() -> Spinner {
     Spinner {
-    frames: vec![
-        "█".to_string(),
-        "▓".to_string(),
-        "▒".to_string(),
-        "░".to_string(),
-    ],
-    fps: Duration::from_millis(125),
+        frames: vec![
+            "█".to_string(),
+            "▓".to_string(),
+            "▒".to_string(),
+            "░".to_string(),
+        ],
+        fps: Duration::from_millis(125),
     }
 }
 
 /// A points spinner.
 pub fn points() -> Spinner {
     Spinner {
-    frames: vec![
-        "∙∙∙".to_string(),
-        "●∙∙".to_string(),
-        "∙●∙".to_string(),
-        "∙∙●".to_string(),
-    ],
-    fps: Duration::from_millis(142),
+        frames: vec![
+            "∙∙∙".to_string(),
+            "●∙∙".to_string(),
+            "∙●∙".to_string(),
+            "∙∙●".to_string(),
+        ],
+        fps: Duration::from_millis(142),
     }
 }
 
 /// A globe spinner.
 pub fn globe() -> Spinner {
     Spinner {
-    frames: vec![
-        "🌍".to_string(),
-        "🌎".to_string(),
-        "🌏".to_string(),
-    ],
-    fps: Duration::from_millis(250),
+        frames: vec!["🌍".to_string(), "🌎".to_string(), "🌏".to_string()],
+        fps: Duration::from_millis(250),
     }
 }
 
 /// A moon spinner.
 pub fn moon() -> Spinner {
     Spinner {
-    frames: vec![
-        "🌑".to_string(),
-        "🌒".to_string(),
-        "🌓".to_string(),
-        "🌔".to_string(),
-        "🌕".to_string(),
-        "🌖".to_string(),
-        "🌗".to_string(),
-        "🌘".to_string(),
-    ],
-    fps: Duration::from_millis(125),
+        frames: vec![
+            "🌑".to_string(),
+            "🌒".to_string(),
+            "🌓".to_string(),
+            "🌔".to_string(),
+            "🌕".to_string(),
+            "🌖".to_string(),
+            "🌗".to_string(),
+            "🌘".to_string(),
+        ],
+        fps: Duration::from_millis(125),
     }
 }
 
 /// A monkey spinner.
 pub fn monkey() -> Spinner {
     Spinner {
-    frames: vec![
-        "🙈".to_string(),
-        "🙉".to_string(),
-        "🙊".to_string(),
-    ],
-    fps: Duration::from_millis(333),
+        frames: vec!["🙈".to_string(), "🙉".to_string(), "🙊".to_string()],
+        fps: Duration::from_millis(333),
     }
 }
 
 /// A meter spinner.
 pub fn meter() -> Spinner {
     Spinner {
-    frames: vec![
-        "▱▱▱".to_string(),
-        "▰▱▱".to_string(),
-        "▰▰▱".to_string(),
-        "▰▰▰".to_string(),
-        "▰▰▱".to_string(),
-        "▰▱▱".to_string(),
-        "▱▱▱".to_string(),
-    ],
-    fps: Duration::from_millis(142),
+        frames: vec![
+            "▱▱▱".to_string(),
+            "▰▱▱".to_string(),
+            "▰▰▱".to_string(),
+            "▰▰▰".to_string(),
+            "▰▰▱".to_string(),
+            "▰▱▱".to_string(),
+            "▱▱▱".to_string(),
+        ],
+        fps: Duration::from_millis(142),
     }
 }
 
 /// A hamburger spinner.
 pub fn hamburger() -> Spinner {
     Spinner {
-    frames: vec![
-        "☱".to_string(),
-        "☲".to_string(),
-        "☴".to_string(),
-        "☲".to_string(),
-    ],
-    fps: Duration::from_millis(333),
+        frames: vec![
+            "☱".to_string(),
+            "☲".to_string(),
+            "☴".to_string(),
+            "☲".to_string(),
+        ],
+        fps: Duration::from_millis(333),
     }
 }
 
 /// An ellipsis spinner.
 pub fn ellipsis() -> Spinner {
     Spinner {
-    frames: vec![
-        "".to_string(),
-        ".".to_string(),
-        "..".to_string(),
-        "...".to_string(),
-    ],
-    fps: Duration::from_millis(333),
+        frames: vec![
+            "".to_string(),
+            ".".to_string(),
+            "..".to_string(),
+            "...".to_string(),
+        ],
+        fps: Duration::from_millis(333),
     }
 }
 
@@ -290,13 +282,7 @@ impl Model {
 
     fn tick(&self, id: i32, tag: i32) -> Cmd {
         let fps = self.spinner.fps;
-        commands::tick(fps, move |t| {
-            Some(Box::new(TickMsg {
-                time: t,
-                id,
-                tag,
-            }))
-        })
+        commands::tick(fps, move |t| Some(Box::new(TickMsg { time: t, id, tag })))
     }
 }
 

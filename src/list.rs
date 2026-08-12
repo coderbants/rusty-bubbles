@@ -21,11 +21,15 @@ use crate::paginator;
 use crate::spinner;
 use crate::textinput;
 use charming_bubbletea::commands;
-use charming_bubbletea::model::{Cmd, Msg};
 use charming_bubbletea::key::KeyPressMsg;
+use charming_bubbletea::model::{Cmd, Msg};
 use charming_lipgloss::{self, Color, Style};
 use charming_x_ansi;
 use std::time::Duration;
+
+/// The update callback type for [DefaultDelegate] items (upstream
+/// `func(m Msg, l *Model) Cmd`).
+type ItemUpdateFunc = Box<dyn Fn(&dyn Msg, &Model) -> Cmd + Send + Sync>;
 
 const BULLET: &str = "•";
 const ELLIPSIS: &str = "…";
@@ -310,8 +314,16 @@ pub fn new(
 
     let mut p = paginator::new(vec![]);
     p.type_ = paginator::Type::Dots;
-    p.active_dot = styles.active_pagination_dot.clone().set_string(&[BULLET]).render("");
-    p.inactive_dot = styles.inactive_pagination_dot.clone().set_string(&[BULLET]).render("");
+    p.active_dot = styles
+        .active_pagination_dot
+        .clone()
+        .set_string(&[BULLET])
+        .render("");
+    p.inactive_dot = styles
+        .inactive_pagination_dot
+        .clone()
+        .set_string(&[BULLET])
+        .render("");
 
     let mut m = Model {
         show_title: true,
@@ -437,7 +449,10 @@ impl Model {
 
     /// StatusBarItemName returns singular and plural status bar item names.
     pub fn status_bar_item_name(&self) -> (String, String) {
-        (self.item_name_singular.clone(), self.item_name_plural.clone())
+        (
+            self.item_name_singular.clone(),
+            self.item_name_plural.clone(),
+        )
     }
 
     /// SetShowPagination hides or shows the paginator. Note that pagination
@@ -865,7 +880,9 @@ impl Model {
                     .set_enabled(self.filter_state == FilterState::FilterApplied);
                 self.key_map.cancel_while_filtering.set_enabled(false);
                 self.key_map.accept_while_filtering.set_enabled(false);
-                self.key_map.quit.set_enabled(!self.disable_quit_keybindings);
+                self.key_map
+                    .quit
+                    .set_enabled(!self.disable_quit_keybindings);
 
                 if self.help.show_all {
                     self.key_map.show_full_help.set_enabled(true);
@@ -886,31 +903,26 @@ impl Model {
         let mut avail_height = self.height;
 
         if self.show_title || (self.show_filter && self.filtering_enabled) {
-            avail_height = avail_height.saturating_sub(
-                charming_lipgloss::size::height(&self.title_view()),
-            );
+            avail_height =
+                avail_height.saturating_sub(charming_lipgloss::size::height(&self.title_view()));
         }
         if self.show_status_bar {
-            avail_height = avail_height.saturating_sub(
-                charming_lipgloss::size::height(&self.status_view()),
-            );
+            avail_height =
+                avail_height.saturating_sub(charming_lipgloss::size::height(&self.status_view()));
         }
         if self.show_pagination {
-            avail_height = avail_height.saturating_sub(
-                charming_lipgloss::size::height(&self.pagination_view()),
-            );
+            avail_height = avail_height
+                .saturating_sub(charming_lipgloss::size::height(&self.pagination_view()));
         }
         if self.show_help {
-            avail_height = avail_height.saturating_sub(
-                charming_lipgloss::size::height(&self.help_view()),
-            );
+            avail_height =
+                avail_height.saturating_sub(charming_lipgloss::size::height(&self.help_view()));
         }
 
         let delegate_height = self.delegate.height();
         let delegate_spacing = self.delegate.spacing();
-        self.paginator.per_page = 1usize.max(
-            avail_height / (delegate_height + delegate_spacing).max(1),
-        );
+        self.paginator.per_page =
+            1usize.max(avail_height / (delegate_height + delegate_spacing).max(1));
 
         let pages = self.visible_items().len();
         if pages < 1 {
@@ -942,7 +954,7 @@ impl Model {
         let mut cmds: Vec<Cmd> = Vec::new();
 
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
-            if key::matches(&m.0, &[self.key_map.force_quit.clone()]) {
+            if key::matches(&m.0, std::slice::from_ref(&self.key_map.force_quit)) {
                 return commands::quit();
             }
         }
@@ -960,7 +972,11 @@ impl Model {
             let _ = m;
         }
 
-        if let Some(_) = msg.as_any().downcast_ref::<StatusMessageTimeoutMsg>() {
+        if msg
+            .as_any()
+            .downcast_ref::<StatusMessageTimeoutMsg>()
+            .is_some()
+        {
             self.hide_status_message();
         }
 
@@ -980,23 +996,23 @@ impl Model {
             let k = &m.0;
             // Note: we match clear filter before quit because, by default,
             // they're both mapped to escape.
-            if key::matches(k, &[self.key_map.clear_filter.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.clear_filter)) {
                 self.reset_filtering();
-            } else if key::matches(k, &[self.key_map.quit.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.quit)) {
                 return commands::quit();
-            } else if key::matches(k, &[self.key_map.cursor_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.cursor_up)) {
                 self.cursor_up();
-            } else if key::matches(k, &[self.key_map.cursor_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.cursor_down)) {
                 self.cursor_down();
-            } else if key::matches(k, &[self.key_map.prev_page.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.prev_page)) {
                 self.paginator.prev_page();
-            } else if key::matches(k, &[self.key_map.next_page.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.next_page)) {
                 self.paginator.next_page();
-            } else if key::matches(k, &[self.key_map.go_to_start.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.go_to_start)) {
                 self.go_to_start();
-            } else if key::matches(k, &[self.key_map.go_to_end.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.go_to_end)) {
                 self.go_to_end();
-            } else if key::matches(k, &[self.key_map.filter.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.filter)) {
                 self.hide_status_message();
                 if self.filter_input.value().is_empty() {
                     // Populate filter with all items only if the filter is
@@ -1008,9 +1024,9 @@ impl Model {
                 self.filter_input.cursor_end();
                 self.filter_input.focus();
                 self.update_keybindings();
-                return Some(Box::new(|| Some(textinput::blink())))
-            } else if key::matches(k, &[self.key_map.show_full_help.clone()])
-                || key::matches(k, &[self.key_map.close_full_help.clone()])
+                return Some(Box::new(|| Some(textinput::blink())));
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.show_full_help))
+                || key::matches(k, std::slice::from_ref(&self.key_map.close_full_help))
             {
                 self.help.show_all = !self.help.show_all;
                 self.update_pagination();
@@ -1030,11 +1046,17 @@ impl Model {
         // Handle keys
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
             let k = &m.0;
-            if key::matches(k, &[self.key_map.cancel_while_filtering.clone()]) {
+            if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.cancel_while_filtering),
+            ) {
                 self.reset_filtering();
                 self.key_map.filter.set_enabled(true);
                 self.key_map.clear_filter.set_enabled(false);
-            } else if key::matches(k, &[self.key_map.accept_while_filtering.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.accept_while_filtering),
+            ) {
                 self.hide_status_message();
 
                 if self.items.is_empty() {
@@ -1101,12 +1123,10 @@ impl Model {
             self.key_map.cancel_while_filtering.clone(),
         ]);
 
-        if !filtering && self.additional_short_help_keys.is_some() {
-            kb.extend(
-                self.additional_short_help_keys
-                    .as_ref()
-                    .unwrap()(),
-            );
+        if !filtering {
+            if let Some(f) = &self.additional_short_help_keys {
+                kb.extend(f());
+            }
         }
 
         kb.push(self.key_map.quit.clone());
@@ -1144,12 +1164,17 @@ impl Model {
             self.key_map.cancel_while_filtering.clone(),
         ];
 
-        if !filtering && self.additional_full_help_keys.is_some() {
-            list_level_bindings.extend(self.additional_full_help_keys.as_ref().unwrap()());
+        if !filtering {
+            if let Some(f) = &self.additional_full_help_keys {
+                list_level_bindings.extend(f());
+            }
         }
 
         kb.push(list_level_bindings);
-        kb.push(vec![self.key_map.quit.clone(), self.key_map.close_full_help.clone()]);
+        kb.push(vec![
+            self.key_map.quit.clone(),
+            self.key_map.close_full_help.clone(),
+        ]);
         kb
     }
 
@@ -1173,7 +1198,8 @@ impl Model {
         let mut pagination = String::new();
         if self.show_pagination {
             pagination = self.pagination_view();
-            avail_height = avail_height.saturating_sub(charming_lipgloss::size::height(&pagination));
+            avail_height =
+                avail_height.saturating_sub(charming_lipgloss::size::height(&pagination));
         }
 
         let mut help_view = String::new();
@@ -1231,15 +1257,19 @@ impl Model {
             if self.filter_state != FilterState::Filtering {
                 view += "  ";
                 view += &self.status_message;
-                view = charming_x_ansi::truncate(&view, self.width.saturating_sub(spinner_width), ELLIPSIS);
+                view = charming_x_ansi::truncate(
+                    &view,
+                    self.width.saturating_sub(spinner_width),
+                    ELLIPSIS,
+                );
             }
         }
 
         // Spinner
         if self.show_spinner && !spinner_on_left {
             // Place spinner on the right
-            let avail_space = self.width
-                - charming_lipgloss::size::width(&title_bar_style.render(&view));
+            let avail_space =
+                self.width - charming_lipgloss::size::width(&title_bar_style.render(&view));
             if avail_space > spinner_width {
                 view += &" ".repeat(avail_space - spinner_width);
                 view += &spinner_view;
@@ -1433,7 +1463,8 @@ fn insert_item_into_slice(
         return vec![item];
     }
     if index >= items.len() {
-        let mut items: Vec<Box<dyn Item + Send + Sync>> = items.iter().map(|i| i.box_clone()).collect();
+        let mut items: Vec<Box<dyn Item + Send + Sync>> =
+            items.iter().map(|i| i.box_clone()).collect();
         items.push(item);
         return items;
     }
@@ -1549,10 +1580,7 @@ pub fn default_key_map() -> KeyMap {
             key::with_keys(&["end", "G"]),
             key::with_help("G/end", "go to end"),
         ]),
-        filter: key::new_binding(vec![
-            key::with_keys(&["/"]),
-            key::with_help("/", "filter"),
-        ]),
+        filter: key::new_binding(vec![key::with_keys(&["/"]), key::with_help("/", "filter")]),
         clear_filter: key::new_binding(vec![
             key::with_keys(&["esc"]),
             key::with_help("esc", "clear filter"),
@@ -1564,15 +1592,20 @@ pub fn default_key_map() -> KeyMap {
             key::with_help("esc", "cancel"),
         ]),
         accept_while_filtering: key::new_binding(vec![
-            key::with_keys(&["enter", "tab", "shift+tab", "ctrl+k", "up", "ctrl+j", "down"]),
+            key::with_keys(&[
+                "enter",
+                "tab",
+                "shift+tab",
+                "ctrl+k",
+                "up",
+                "ctrl+j",
+                "down",
+            ]),
             key::with_help("enter", "apply filter"),
         ]),
 
         // Toggle help.
-        show_full_help: key::new_binding(vec![
-            key::with_keys(&["?"]),
-            key::with_help("?", "more"),
-        ]),
+        show_full_help: key::new_binding(vec![key::with_keys(&["?"]), key::with_help("?", "more")]),
         close_full_help: key::new_binding(vec![
             key::with_keys(&["?"]),
             key::with_help("?", "close help"),
@@ -1621,7 +1654,10 @@ pub fn new_default_item_styles(is_dark: bool) -> DefaultItemStyles {
             .padding(&[0, 0, 0, 2]),
         normal_desc: charming_lipgloss::new_style(),
         selected_title: charming_lipgloss::new_style()
-            .border(charming_lipgloss::Border::normal(), &[false, false, false, true])
+            .border(
+                charming_lipgloss::Border::normal(),
+                &[false, false, false, true],
+            )
             .border_foreground(&[
                 &light_dark(Color::parse("#F793FF"), Color::parse("#AD58B4")).to_string(),
             ])
@@ -1677,7 +1713,7 @@ pub struct DefaultDelegate {
     /// The styles for the delegate.
     pub styles: DefaultItemStyles,
     /// An optional update function called on item updates.
-    pub update_func: Option<Box<dyn Fn(&dyn Msg, &Model) -> Cmd + Send + Sync>>,
+    pub update_func: Option<ItemUpdateFunc>,
     /// An optional short help function.
     pub short_help_func: Option<Box<dyn Fn() -> Vec<Binding> + Send + Sync>>,
     /// An optional full help function.
@@ -1743,7 +1779,7 @@ impl DefaultDelegate {
             return String::new();
         }
 
-        if m.width <= 0 {
+        if m.width == 0 {
             // short-circuit
             return String::new();
         }
@@ -1751,7 +1787,8 @@ impl DefaultDelegate {
         let s = &self.styles;
 
         // Prevent text from exceeding list width
-        let textwidth = m.width - s.normal_title.get_padding_left() - s.normal_title.get_padding_right();
+        let textwidth =
+            m.width - s.normal_title.get_padding_left() - s.normal_title.get_padding_right();
         title = charming_x_ansi::truncate(&title, textwidth, ELLIPSIS);
         if self.show_description {
             let mut lines: Vec<String> = vec![];
@@ -1766,7 +1803,8 @@ impl DefaultDelegate {
 
         // Conditions
         let is_selected = index == m.index();
-        let empty_filter = m.filter_state() == FilterState::Filtering && m.filter_value().is_empty();
+        let empty_filter =
+            m.filter_state() == FilterState::Filtering && m.filter_value().is_empty();
         let is_filtered = m.filter_state() == FilterState::Filtering
             || m.filter_state() == FilterState::FilterApplied;
 
@@ -1784,7 +1822,12 @@ impl DefaultDelegate {
                 // Highlight matches
                 let unmatched = s.selected_title.clone().inline(true);
                 let matched = unmatched.clone().inherit(&s.filter_match);
-                title = charming_lipgloss::runes::style_runes(&title, &matched_rumes, &matched, &unmatched);
+                title = charming_lipgloss::runes::style_runes(
+                    &title,
+                    &matched_rumes,
+                    &matched,
+                    &unmatched,
+                );
             }
             title = s.selected_title.clone().render(&title);
             desc = s.selected_desc.clone().render(&desc);
@@ -1793,7 +1836,12 @@ impl DefaultDelegate {
                 // Highlight matches
                 let unmatched = s.normal_title.clone().inline(true);
                 let matched = unmatched.clone().inherit(&s.filter_match);
-                title = charming_lipgloss::runes::style_runes(&title, &matched_rumes, &matched, &unmatched);
+                title = charming_lipgloss::runes::style_runes(
+                    &title,
+                    &matched_rumes,
+                    &matched,
+                    &unmatched,
+                );
             }
             title = s.normal_title.clone().render(&title);
             desc = s.normal_desc.clone().render(&desc);

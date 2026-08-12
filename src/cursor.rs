@@ -136,11 +136,19 @@ impl Model {
             return self.blink();
         }
 
-        if let Some(_) = msg.as_any().downcast_ref::<charming_bubbletea::focus::FocusMsg>() {
+        if msg
+            .as_any()
+            .downcast_ref::<charming_bubbletea::focus::FocusMsg>()
+            .is_some()
+        {
             return self.focus();
         }
 
-        if let Some(_) = msg.as_any().downcast_ref::<charming_bubbletea::focus::BlurMsg>() {
+        if msg
+            .as_any()
+            .downcast_ref::<charming_bubbletea::focus::BlurMsg>()
+            .is_some()
+        {
             self.blur();
             return None;
         }
@@ -167,7 +175,7 @@ impl Model {
             return cmd;
         }
 
-        if let Some(_) = msg.as_any().downcast_ref::<BlinkCanceled>() {
+        if msg.as_any().downcast_ref::<BlinkCanceled>().is_some() {
             // no-op
             return None;
         }

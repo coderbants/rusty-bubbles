@@ -226,7 +226,10 @@ fn test_set_value() {
     // SetValue should reset text area
     m.set_value("Test");
     let value = m.value();
-    assert_eq!(value, "Test", "Text area was not reset when SetValue() was called");
+    assert_eq!(
+        value, "Test",
+        "Text area was not reset when SetValue() was called"
+    );
 }
 
 #[test]
@@ -275,7 +278,10 @@ fn test_can_handle_emoji() {
     assert_eq!(col, 3, "Expected cursor to be on the third character");
 
     let char_offset = m.line_info().char_offset;
-    assert_eq!(char_offset, 6, "Expected cursor to be on the sixth character");
+    assert_eq!(
+        char_offset, 6,
+        "Expected cursor to be on the sixth character"
+    );
 }
 
 #[test]
@@ -433,7 +439,10 @@ fn test_word() {
 
         let expect = "Word4";
         let word = m.word();
-        assert_eq!(word, expect, "Expected last word to be '{expect}', got '{word}'");
+        assert_eq!(
+            word, expect,
+            "Expected last word to be '{expect}', got '{word}'"
+        );
     }
 
     {
@@ -462,7 +471,10 @@ fn test_word() {
 
         let expect = "Word3";
         let word = m.word();
-        assert_eq!(word, expect, "Expected last word to be '{expect}', got '{word}'");
+        assert_eq!(
+            word, expect,
+            "Expected last word to be '{expect}', got '{word}'"
+        );
     }
 
     {
@@ -496,7 +508,10 @@ fn test_word() {
 
         let expect = "Word2";
         let word = m.word();
-        assert_eq!(word, expect, "Expected last word to be '{expect}', got '{word}'");
+        assert_eq!(
+            word, expect,
+            "Expected last word to be '{expect}', got '{word}'"
+        );
     }
 }
 
@@ -510,7 +525,12 @@ fn test_dynamic_height_default_unchanged() {
         ta.update(&*key_press(c));
     }
 
-    assert_eq!(ta.height(), 6, "expected static height 6, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        6,
+        "expected static height 6, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -518,13 +538,28 @@ fn test_dynamic_height_grows_on_newline() {
     let mut ta = new_dynamic_text_area(1, 20);
 
     ta.update(&*key_press('a'));
-    assert_eq!(ta.height(), 1, "expected height 1 after single char, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        1,
+        "expected height 1 after single char, got {}",
+        ta.height()
+    );
 
     ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
-    assert_eq!(ta.height(), 2, "expected height 2 after first newline, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        2,
+        "expected height 2 after first newline, got {}",
+        ta.height()
+    );
 
     ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
-    assert_eq!(ta.height(), 3, "expected height 3 after second newline, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        3,
+        "expected height 3 after second newline, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -536,7 +571,11 @@ fn test_dynamic_height_grows_on_soft_wrap() {
         ta.update(&*key_press(c));
     }
 
-    assert!(ta.height() >= 2, "expected height >= 2 after soft wrap, got {}", ta.height());
+    assert!(
+        ta.height() >= 2,
+        "expected height >= 2 after soft wrap, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -549,13 +588,23 @@ fn test_dynamic_height_shrinks_on_line_deletion() {
     ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
     ta.update(&*key_press('c'));
 
-    assert_eq!(ta.height(), 3, "expected height 3 before deletion, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        3,
+        "expected height 3 before deletion, got {}",
+        ta.height()
+    );
 
     // Backspace at start of line 3 merges with line 2
     ta.cursor_start();
     ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE));
 
-    assert_eq!(ta.height(), 2, "expected height 2 after line merge, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        2,
+        "expected height 2 after line merge, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -587,7 +636,12 @@ fn test_dynamic_height_grows_on_paste() {
         content: "line1\nline2\nline3\nline4\nline5".to_string(),
     });
 
-    assert_eq!(ta.height(), 5, "expected height 5 after pasting 5 lines, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        5,
+        "expected height 5 after pasting 5 lines, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -598,11 +652,20 @@ fn test_dynamic_height_recalculates_on_set_width() {
     // Insert a line that fits in 40 cols but wraps in 10 cols
     ta.set_value("abcdefghijklmnopqrstuvwxyz");
 
-    assert_eq!(ta.height(), 1, "expected height 1 at width 40, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        1,
+        "expected height 1 at width 40, got {}",
+        ta.height()
+    );
 
     ta.set_width(10);
 
-    assert!(ta.height() >= 3, "expected height >= 3 after narrowing to width 10, got {}", ta.height());
+    assert!(
+        ta.height() >= 3,
+        "expected height >= 3 after narrowing to width 10, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -611,7 +674,12 @@ fn test_dynamic_height_recalculates_on_set_value() {
 
     ta.set_value("a\nb\nc\nd\ne");
 
-    assert_eq!(ta.height(), 5, "expected height 5 after SetValue with 5 lines, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        5,
+        "expected height 5 after SetValue with 5 lines, got {}",
+        ta.height()
+    );
 }
 
 #[test]
@@ -647,7 +715,12 @@ fn test_dynamic_height_cursor_position_after_shrink() {
     }
     ta.update(&*key_press('f'));
 
-    assert_eq!(ta.height(), 6, "expected height 6 before shrink, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        6,
+        "expected height 6 before shrink, got {}",
+        ta.height()
+    );
 
     // Delete lines by backspacing
     for _ in 0..4 {
@@ -693,9 +766,19 @@ fn test_max_content_height_scrolls_beyond_max_height() {
         ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
     }
 
-    assert_eq!(ta.height(), 5, "expected visible height capped at 5, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        5,
+        "expected visible height capped at 5, got {}",
+        ta.height()
+    );
 
-    assert_eq!(ta.line_count(), 9, "expected 9 logical lines, got {}", ta.line_count());
+    assert_eq!(
+        ta.line_count(),
+        9,
+        "expected 9 logical lines, got {}",
+        ta.line_count()
+    );
 }
 
 #[test]
@@ -761,7 +844,12 @@ fn test_max_content_height_without_dynamic_height() {
         ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
     }
 
-    assert_eq!(ta.height(), 3, "expected fixed height 3, got {}", ta.height());
+    assert_eq!(
+        ta.height(),
+        3,
+        "expected fixed height 3, got {}",
+        ta.height()
+    );
 
     assert!(
         ta.total_visual_lines() <= 5,
@@ -824,8 +912,18 @@ fn test_dynamic_height_shrinks_when_scrolled_and_lines_deleted() {
     }
     ta.update(&*key_press('x'));
 
-    assert_eq!(ta.height(), 5, "expected height 5 (capped at MaxHeight), got {}", ta.height());
-    assert_eq!(ta.line_count(), 8, "expected 8 lines, got {}", ta.line_count());
+    assert_eq!(
+        ta.height(),
+        5,
+        "expected height 5 (capped at MaxHeight), got {}",
+        ta.height()
+    );
+    assert_eq!(
+        ta.line_count(),
+        8,
+        "expected 8 lines, got {}",
+        ta.line_count()
+    );
 
     // Now delete lines from the bottom by selecting all on current line and
     // backspacing
@@ -908,9 +1006,12 @@ fn test_view() {
         cursor_col: usize,
     }
 
+    /// A model setup callback used by the upstream test cases.
+    type ModelFunc = Option<Box<dyn Fn(&mut textarea::Model)>>;
+
     struct Case {
         name: &'static str,
-        model_func: Option<Box<dyn Fn(&mut textarea::Model)>>,
+        model_func: ModelFunc,
         want: Want,
     }
 
@@ -2232,11 +2333,7 @@ fn test_view() {
         let view = strip_string(&m.view());
         let want_view = strip_string(&common::heredoc(tt.want.view));
 
-        assert_eq!(
-            want_view, view,
-            "subtest: {}",
-            tt.name
-        );
+        assert_eq!(want_view, view, "subtest: {}", tt.name);
 
         let cursor_row = m.cursor_line_number();
         let cursor_col = m.line_info().column_offset;

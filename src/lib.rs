@@ -22,6 +22,7 @@
 //! - [`viewport`] — viewport component
 //! - [`textarea`] — multi-line text area component
 //! - [`filepicker`] — file picker component
+//!
 //! </public-docs>
 
 pub mod cursor;

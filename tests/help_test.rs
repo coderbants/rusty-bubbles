@@ -15,15 +15,24 @@ fn test_full_help() {
     let mut m = help::new();
     m.full_separator = " | ".to_string();
     let kb: Vec<Vec<key::Binding>> = vec![
-        vec![key::new_binding(vec![key::with_keys(&["x"]), key::with_help("enter", "continue")])],
+        vec![key::new_binding(vec![
+            key::with_keys(&["x"]),
+            key::with_help("enter", "continue"),
+        ])],
         vec![
             key::new_binding(vec![key::with_keys(&["x"]), key::with_help("esc", "back")]),
             key::new_binding(vec![key::with_keys(&["x"]), key::with_help("?", "help")]),
         ],
         vec![
             key::new_binding(vec![key::with_keys(&["x"]), key::with_help("H", "home")]),
-            key::new_binding(vec![key::with_keys(&["x"]), key::with_help("ctrl+c", "quit")]),
-            key::new_binding(vec![key::with_keys(&["x"]), key::with_help("ctrl+l", "log")]),
+            key::new_binding(vec![
+                key::with_keys(&["x"]),
+                key::with_help("ctrl+c", "quit"),
+            ]),
+            key::new_binding(vec![
+                key::with_keys(&["x"]),
+                key::with_help("ctrl+l", "log"),
+            ]),
         ],
     ];
 

@@ -13,7 +13,6 @@ use charming_lipgloss::border::Border;
 use charming_x_ansi::util;
 use std::collections::HashMap;
 
-
 const TEXT_CONTENT_LIST: &str = "57 Precepts of narcissistic comedy character Zote from an awesome \"Hollow knight\" game (https://store.steampowered.com/app/367520/Hollow_Knight/).
 Precept One: 'Always Win Your Battles'. Losing a battle earns you nothing and teaches you nothing. Win your battles, or don't engage in them at all!
 
@@ -33,14 +32,24 @@ Precept Fourteen: 'Respect Your Superiors'. If someone is your superior in stren
 Precept Fifteen: 'One Foe, One Blow'. You should only use a single blow to defeat an enemy. Any more is a waste. Also, by counting your blows as you fight, you'll know how many foes you've defeated.";
 
 fn new_vt(width: usize, height: usize) -> viewport::Model {
-    viewport::new(vec![viewport::with_width(width), viewport::with_height(height)])
+    viewport::new(vec![
+        viewport::with_width(width),
+        viewport::with_height(height),
+    ])
 }
 
 #[test]
 fn test_new() {
     let m = new_vt(10, 10);
-    assert_eq!(m.mouse_wheel_delta, 3, "default MouseWheelDelta should be 3, got {}", m.mouse_wheel_delta);
-    assert!(m.mouse_wheel_enabled, "mouse wheel should be enabled by default");
+    assert_eq!(
+        m.mouse_wheel_delta, 3,
+        "default MouseWheelDelta should be 3, got {}",
+        m.mouse_wheel_delta
+    );
+    assert!(
+        m.mouse_wheel_enabled,
+        "mouse wheel should be enabled by default"
+    );
 }
 
 #[test]
@@ -54,13 +63,23 @@ fn test_set_horizontal_step() {
     m.set_horizontal_step(8);
     m.set_x_offset(0);
     m.scroll_right(8);
-    assert_eq!(m.x_offset(), 8, "horizontalStep should be 8, got {}", m.x_offset());
+    assert_eq!(
+        m.x_offset(),
+        8,
+        "horizontalStep should be 8, got {}",
+        m.x_offset()
+    );
 
     // No negative step: setting 0 means scrolling does nothing.
     m.set_horizontal_step(0);
     m.set_x_offset(0);
     m.scroll_right(0);
-    assert_eq!(m.x_offset(), 0, "horizontalStep should be 0, got {}", m.x_offset());
+    assert_eq!(
+        m.x_offset(),
+        0,
+        "horizontalStep should be 0, got {}",
+        m.x_offset()
+    );
 }
 
 #[test]
@@ -69,9 +88,21 @@ fn test_move_left() {
 
     // Zero position: scrolling left at offset 0 stays at 0.
     let mut m = new_vt(10, 10);
-    assert_eq!(m.x_offset(), zero_position, "default indent should be {}, got {}", zero_position, m.x_offset());
+    assert_eq!(
+        m.x_offset(),
+        zero_position,
+        "default indent should be {}, got {}",
+        zero_position,
+        m.x_offset()
+    );
     m.scroll_left(6);
-    assert_eq!(m.x_offset(), zero_position, "indent should be {}, got {}", zero_position, m.x_offset());
+    assert_eq!(
+        m.x_offset(),
+        zero_position,
+        "indent should be {}, got {}",
+        zero_position,
+        m.x_offset()
+    );
 
     // Move: offset 12, scroll left by 6 -> 6. (Upstream sets the private
     // longestLineWidth so the offset is not clamped; here a long content
@@ -89,7 +120,13 @@ fn test_move_right() {
 
     let mut m = new_vt(10, 10);
     m.set_content("Some line that is longer than width");
-    assert_eq!(m.x_offset(), zero_position, "default indent should be {}, got {}", zero_position, m.x_offset());
+    assert_eq!(
+        m.x_offset(),
+        zero_position,
+        "default indent should be {}, got {}",
+        zero_position,
+        m.x_offset()
+    );
 
     m.scroll_right(6);
     assert_eq!(m.x_offset(), 6, "indent should be 6, got {}", m.x_offset());
@@ -102,18 +139,31 @@ fn test_reset_indent() {
     let mut m = new_vt(10, 10);
     m.set_x_offset(500);
     m.set_x_offset(zero_position);
-    assert_eq!(m.x_offset(), zero_position, "indent should be {}, got {}", zero_position, m.x_offset());
+    assert_eq!(
+        m.x_offset(),
+        zero_position,
+        "indent should be {}, got {}",
+        zero_position,
+        m.x_offset()
+    );
 }
 
 #[test]
 fn test_visible_lines() {
-    let default_list: Vec<String> = TEXT_CONTENT_LIST.split('\n').map(|s| s.to_string()).collect();
+    let default_list: Vec<String> = TEXT_CONTENT_LIST
+        .split('\n')
+        .map(|s| s.to_string())
+        .collect();
 
     // Empty list: the view renders blank lines.
     let m = new_vt(10, 10);
     let view = m.view();
     for line in view.split('\n') {
-        assert!(line.trim().is_empty(), "view should be empty, got {}", m.view());
+        assert!(
+            line.trim().is_empty(),
+            "view should be empty, got {}",
+            m.view()
+        );
     }
 
     // List of 10 lines, trimmed to width.
@@ -122,10 +172,22 @@ fn test_visible_lines() {
     m.set_content(&default_list.join("\n"));
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
-    assert_eq!(lines.len(), number_of_lines, "view should have {number_of_lines} lines, got {}", lines.len());
+    assert_eq!(
+        lines.len(),
+        number_of_lines,
+        "view should have {number_of_lines} lines, got {}",
+        lines.len()
+    );
     let last_item_idx = number_of_lines - 1;
-    let should_get: String = default_list[last_item_idx].chars().take(m.width()).collect();
-    assert_eq!(lines[last_item_idx], should_get, "{last_item_idx}th list item should be '{should_get}', got '{}'", lines[last_item_idx]);
+    let should_get: String = default_list[last_item_idx]
+        .chars()
+        .take(m.width())
+        .collect();
+    assert_eq!(
+        lines[last_item_idx], should_get,
+        "{last_item_idx}th list item should be '{should_get}', got '{}'",
+        lines[last_item_idx]
+    );
 
     // List with y offset.
     let mut m = new_vt(10, number_of_lines);
@@ -133,11 +195,26 @@ fn test_visible_lines() {
     m.set_y_offset(5);
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
-    assert_eq!(lines.len(), number_of_lines, "view should have {number_of_lines} lines, got {}", lines.len());
-    assert_ne!(lines[0], default_list[0], "first item of list should not be the first item of initial list because of Y offset");
+    assert_eq!(
+        lines.len(),
+        number_of_lines,
+        "view should have {number_of_lines} lines, got {}",
+        lines.len()
+    );
+    assert_ne!(
+        lines[0], default_list[0],
+        "first item of list should not be the first item of initial list because of Y offset"
+    );
     let last_item_idx = number_of_lines - 1;
-    let should_get: String = default_list[m.y_offset() + last_item_idx].chars().take(m.width()).collect();
-    assert_eq!(lines[last_item_idx], should_get, "{last_item_idx}th list item should be '{should_get}', got '{}'", lines[last_item_idx]);
+    let should_get: String = default_list[m.y_offset() + last_item_idx]
+        .chars()
+        .take(m.width())
+        .collect();
+    assert_eq!(
+        lines[last_item_idx], should_get,
+        "{last_item_idx}th list item should be '{should_get}', got '{}'",
+        lines[last_item_idx]
+    );
 
     // List with y offset and horizontal scroll. (Upstream's white-box test
     // sets the private `lines` field directly, leaving `longestLineWidth`
@@ -149,27 +226,62 @@ fn test_visible_lines() {
     m.set_y_offset(7);
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
-    assert_eq!(lines.len(), number_of_lines, "view should have {number_of_lines} lines, got {}", lines.len());
+    assert_eq!(
+        lines.len(),
+        number_of_lines,
+        "view should have {number_of_lines} lines, got {}",
+        lines.len()
+    );
     let last_item = number_of_lines - 1;
     let default_last_item = default_list.len() - 1;
-    let cut: String = default_list[default_last_item].chars().take(m.width()).collect();
-    assert_eq!(lines[last_item], cut, "{last_item}th list item should be the width-cut version");
-    assert!(lines[0].starts_with("Precept"), "first list item has to have prefix Precept");
+    let cut: String = default_list[default_last_item]
+        .chars()
+        .take(m.width())
+        .collect();
+    assert_eq!(
+        lines[last_item], cut,
+        "{last_item}th list item should be the width-cut version"
+    );
+    assert!(
+        lines[0].starts_with("Precept"),
+        "first list item has to have prefix Precept"
+    );
 
     m.scroll_right(6);
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
     let prefix: String = "Precept".chars().skip(m.x_offset()).collect();
-    assert!(lines[0].starts_with(&prefix), "first list item has to have prefix {prefix}, get {}", lines[0]);
-    let cut: String = util::cut(&default_list[default_last_item], m.x_offset(), m.x_offset() + m.width());
-    assert_eq!(lines[last_item], cut, "last item should be offset-cut, got {}", lines[last_item]);
+    assert!(
+        lines[0].starts_with(&prefix),
+        "first list item has to have prefix {prefix}, get {}",
+        lines[0]
+    );
+    let cut: String = util::cut(
+        &default_list[default_last_item],
+        m.x_offset(),
+        m.x_offset() + m.width(),
+    );
+    assert_eq!(
+        lines[last_item], cut,
+        "last item should be offset-cut, got {}",
+        lines[last_item]
+    );
 
     m.scroll_left(6);
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
-    assert!(lines[0].starts_with("Precept"), "first list item has to have prefix Precept");
-    let cut: String = default_list[default_last_item].chars().take(m.width()).collect();
-    assert_eq!(lines[last_item], cut, "{last_item}th list item should be the width-cut version");
+    assert!(
+        lines[0].starts_with("Precept"),
+        "first list item has to have prefix Precept"
+    );
+    let cut: String = default_list[default_last_item]
+        .chars()
+        .take(m.width())
+        .collect();
+    assert_eq!(
+        lines[last_item], cut,
+        "{last_item}th list item should be the width-cut version"
+    );
 
     // List with 2-cell symbols and horizontal scroll. (Upstream sets the
     // private longestLineWidth=30 hack; here the lines are long enough that
@@ -186,10 +298,19 @@ fn test_visible_lines() {
     m.set_content_lines(&init_list);
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
-    assert_eq!(lines.len(), number_of_lines, "view should have {number_of_lines} lines, got {}", lines.len());
+    assert_eq!(
+        lines.len(),
+        number_of_lines,
+        "view should have {number_of_lines} lines, got {}",
+        lines.len()
+    );
     let last_item_idx = number_of_lines - 1;
     let cut: String = charming_x_ansi::cut(&init_list[last_item_idx], 0, 20);
-    assert_eq!(lines[last_item_idx].trim_end(), cut, "{last_item_idx}th list item should be the width-cut version");
+    assert_eq!(
+        lines[last_item_idx].trim_end(),
+        cut,
+        "{last_item_idx}th list item should be the width-cut version"
+    );
 
     m.scroll_right(horizontal_step);
     let view = m.view();
@@ -228,7 +349,11 @@ fn test_right_overscroll() {
     }
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
-    assert_eq!(lines[0].trim_end(), content, "visible line should stay the same as content");
+    assert_eq!(
+        lines[0].trim_end(),
+        content,
+        "visible line should stay the same as content"
+    );
 }
 
 fn test_highlights(content: &str, re: &regex::Regex, expect: Vec<HighlightInfo>) {
@@ -236,7 +361,10 @@ fn test_highlights(content: &str, re: &regex::Regex, expect: Vec<HighlightInfo>)
     vt.set_content(content);
 
     let content = vt.get_content();
-    let matches: Vec<Vec<usize>> = re.find_iter(&content).map(|m| vec![m.start(), m.end()]).collect();
+    let matches: Vec<Vec<usize>> = re
+        .find_iter(&content)
+        .map(|m| vec![m.start(), m.end()])
+        .collect();
     vt.set_highlights(&matches);
 
     assert_eq!(
@@ -252,9 +380,16 @@ fn test_highlights(content: &str, re: &regex::Regex, expect: Vec<HighlightInfo>)
 
     for hi in &expect {
         for (line, hl) in &hi.lines {
-            let cut = util::cut(&vt.get_content().split('\n').nth(*line).unwrap_or("").to_string(), hl.0, hl.1);
+            let cut = util::cut(
+                vt.get_content().split('\n').nth(*line).unwrap_or(""),
+                hl.0,
+                hl.1,
+            );
             if !re.is_match(&cut) {
-                panic!("expect to match '{}', got '{cut}': line: {line}, cut: {hl:?}", re.as_str());
+                panic!(
+                    "expect to match '{}', got '{cut}': line: {line}, cut: {hl:?}",
+                    re.as_str()
+                );
             }
         }
     }
@@ -378,17 +513,26 @@ Charm热爱开源 • Charm loves open source
 
 #[test]
 fn test_sizing() {
-    let lines: Vec<String> = TEXT_CONTENT_LIST.split('\n').map(|s| s.to_string()).collect();
+    let lines: Vec<String> = TEXT_CONTENT_LIST
+        .split('\n')
+        .map(|s| s.to_string())
+        .collect();
 
     // view-40x100percent
     let width = 40;
     let height = lines.len() + 2;
     let mut vt = new_vt(width, height);
-    vt.style = vt.style.clone().border(Border::rounded(), &[true, true, true, true]);
+    vt.style = vt
+        .style
+        .clone()
+        .border(Border::rounded(), &[true, true, true, true]);
     vt.set_content(TEXT_CONTENT_LIST);
     let view = vt.view();
     assert_eq!(
-        (charming_lipgloss::size::width(&view), charming_lipgloss::size::height(&view)),
+        (
+            charming_lipgloss::size::width(&view),
+            charming_lipgloss::size::height(&view)
+        ),
         (width, height),
         "view size should be {width} x {height}"
     );
@@ -398,69 +542,122 @@ fn test_sizing() {
     let (width, height) = (50, 15);
     let mut vt = new_vt(width, height);
     vt.soft_wrap = true;
-    vt.style = vt.style.clone().border(Border::rounded(), &[true, true, true, true]);
+    vt.style = vt
+        .style
+        .clone()
+        .border(Border::rounded(), &[true, true, true, true]);
     vt.set_content(TEXT_CONTENT_LIST);
     let view = vt.view();
     assert_eq!(
-        (charming_lipgloss::size::width(&view), charming_lipgloss::size::height(&view)),
+        (
+            charming_lipgloss::size::width(&view),
+            charming_lipgloss::size::height(&view)
+        ),
         (width, height),
         "view size should be {width} x {height}"
     );
     common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-at-top.golden");
     vt.scroll_down(1);
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-scrolled-plus-1.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-scrolled-plus-1.golden",
+    );
     vt.scroll_down(1);
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-scrolled-plus-2.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-scrolled-plus-2.golden",
+    );
     vt.goto_bottom();
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-at-bottom.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-at-bottom.golden",
+    );
 
     // view-50x15-softwrap-gutter
     let (width, height) = (50, 15);
     let mut vt = new_vt(width, height);
     vt.soft_wrap = true;
-    vt.style = vt.style.clone().border(Border::rounded(), &[true, true, true, true]);
-    vt.left_gutter_func = Some(Box::new(|_ctx: GutterContext| -> String { "  ".to_string() }));
+    vt.style = vt
+        .style
+        .clone()
+        .border(Border::rounded(), &[true, true, true, true]);
+    vt.left_gutter_func = Some(Box::new(|_ctx: GutterContext| -> String {
+        "  ".to_string()
+    }));
     vt.set_content(TEXT_CONTENT_LIST);
     assert_eq!(
-        (charming_lipgloss::size::width(&vt.view()), charming_lipgloss::size::height(&vt.view())),
+        (
+            charming_lipgloss::size::width(&vt.view()),
+            charming_lipgloss::size::height(&vt.view())
+        ),
         (width, height),
         "view size should be {width} x {height}"
     );
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-gutter-at-top.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-gutter-at-top.golden",
+    );
     vt.scroll_down(1);
     assert_eq!(
-        (charming_lipgloss::size::width(&vt.view()), charming_lipgloss::size::height(&vt.view())),
+        (
+            charming_lipgloss::size::width(&vt.view()),
+            charming_lipgloss::size::height(&vt.view())
+        ),
         (width, height),
         "view size should be {width} x {height}"
     );
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-gutter-scrolled-plus-1.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-gutter-scrolled-plus-1.golden",
+    );
     vt.scroll_down(1);
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-gutter-scrolled-plus-2.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-gutter-scrolled-plus-2.golden",
+    );
     vt.goto_bottom();
-    common::assert_golden(&vt.view(), "TestSizing/view-50x15-softwrap-gutter-at-bottom.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-50x15-softwrap-gutter-at-bottom.golden",
+    );
 
     // view-40x1-softwrap
     let (width, height) = (40 + 2, 1 + 2);
     let mut vt = new_vt(width, height);
     vt.soft_wrap = true;
-    vt.style = vt.style.clone().border(Border::rounded(), &[true, true, true, true]);
+    vt.style = vt
+        .style
+        .clone()
+        .border(Border::rounded(), &[true, true, true, true]);
     vt.set_content(TEXT_CONTENT_LIST);
     let view = vt.view();
     assert_eq!(
-        (charming_lipgloss::size::width(&view), charming_lipgloss::size::height(&view)),
+        (
+            charming_lipgloss::size::width(&view),
+            charming_lipgloss::size::height(&view)
+        ),
         (width, height),
         "view size should be {width} x {height}"
     );
     common::assert_golden(&view, "TestSizing/view-40x1-softwrap.golden");
     vt.scroll_down(1);
-    common::assert_golden(&vt.view(), "TestSizing/view-40x1-softwrap-scrolled-plus-1.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-40x1-softwrap-scrolled-plus-1.golden",
+    );
     vt.scroll_down(1);
-    common::assert_golden(&vt.view(), "TestSizing/view-40x1-softwrap-scrolled-plus-2.golden");
+    common::assert_golden(
+        &vt.view(),
+        "TestSizing/view-40x1-softwrap-scrolled-plus-2.golden",
+    );
     vt.goto_bottom();
     common::assert_golden(&vt.view(), "TestSizing/view-40x1-softwrap-at-bottom.golden");
 
     // view-50x15-content-lines
-    let content: Vec<String> = vec!["57 Precepts of narcissistic comedy character Zote from an\nawesome \"Hollow knight\" game".to_string()];
+    let content: Vec<String> = vec![
+        "57 Precepts of narcissistic comedy character Zote from an\nawesome \"Hollow knight\" game"
+            .to_string(),
+    ];
     let mut vt = new_vt(50, 15);
     vt.set_content_lines(&content);
     common::assert_golden(&vt.view(), "TestSizing/view-50x15-content-lines.golden");
@@ -484,7 +681,12 @@ fn test_sizing() {
 #[test]
 #[ignore]
 fn benchmark_view() {
-    let cases: Vec<(usize, usize, bool)> = vec![(30, 15, false), (100, 100, false), (30, 15, true), (100, 100, true)];
+    let cases: Vec<(usize, usize, bool)> = vec![
+        (30, 15, false),
+        (100, 100, false),
+        (30, 15, true),
+        (100, 100, true),
+    ];
     for (w, h, soft_wrap) in cases {
         let mut vt = new_vt(w, h);
         vt.soft_wrap = soft_wrap;

@@ -24,11 +24,21 @@ fn test_current_suggestion() {
     m.show_suggestions = true;
 
     let suggestion = m.current_suggestion();
-    assert_eq!(suggestion, "", "expected no current suggestion but was {suggestion}");
+    assert_eq!(
+        suggestion, "",
+        "expected no current suggestion but was {suggestion}"
+    );
 
-    m.set_suggestions(&["test1".to_string(), "test2".to_string(), "test3".to_string()]);
+    m.set_suggestions(&[
+        "test1".to_string(),
+        "test2".to_string(),
+        "test3".to_string(),
+    ]);
     let suggestion = m.current_suggestion();
-    assert_eq!(suggestion, "", "expected no current suggestion but was {suggestion}");
+    assert_eq!(
+        suggestion, "",
+        "expected no current suggestion but was {suggestion}"
+    );
 
     m.set_value("test");
     // Drive the suggestion flow like the upstream Update handler: focus and
@@ -41,7 +51,10 @@ fn test_current_suggestion() {
     m.update(&*suggestion_next());
     m.update(&*suggestion_next());
     let suggestion = m.current_suggestion();
-    assert_eq!(suggestion, "test2", "expected first suggestion but was {suggestion}");
+    assert_eq!(
+        suggestion, "test2",
+        "expected first suggestion but was {suggestion}"
+    );
 
     m.blur();
     let view = m.view();

@@ -319,9 +319,9 @@ impl Model {
                 return None;
             }
 
-            let (pos, vel) = self
-                .spring
-                .update(self.percent_shown, self.velocity, self.target_percent);
+            let (pos, vel) =
+                self.spring
+                    .update(self.percent_shown, self.velocity, self.target_percent);
             self.percent_shown = pos;
             self.velocity = vel;
             return self.next_frame();
@@ -355,7 +355,7 @@ impl Model {
     /// If you're rendering with [`view_as`](Self::view_as) you won't need
     /// this.
     pub fn set_percent(&mut self, p: f64) -> Cmd {
-        self.target_percent = p.max(0.0).min(1.0);
+        self.target_percent = p.clamp(0.0, 1.0);
         self.tag += 1;
         self.next_frame()
     }
@@ -389,7 +389,11 @@ impl Model {
     pub fn view_as(&self, percent: f64) -> String {
         let mut b = String::new();
         let percent_view = self.percentage_view(percent);
-        self.bar_view(&mut b, percent, charming_x_ansi::string_width(&percent_view));
+        self.bar_view(
+            &mut b,
+            percent,
+            charming_x_ansi::string_width(&percent_view),
+        );
         b.push_str(&percent_view);
         b
     }
@@ -496,11 +500,14 @@ impl Model {
         if !self.show_percentage {
             return String::new();
         }
-        let percent = percent.max(0.0).min(1.0);
+        let percent = percent.clamp(0.0, 1.0);
         // Go's fmt.Sprintf with ` %3.0f%%` (leading space, right-aligned,
         // width 3, no decimals, escaped '%').
         let percentage = format!(" {:3.0}%", percent * 100.0);
-        self.percentage_style.clone().inline(true).render(&percentage)
+        self.percentage_style
+            .clone()
+            .inline(true)
+            .render(&percentage)
     }
 }
 

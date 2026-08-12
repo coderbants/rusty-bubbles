@@ -45,8 +45,10 @@ impl ItemDelegate for ItemDelegate_ {
 }
 
 fn new_list(items: Vec<Item_>) -> Model {
-    let items: Vec<Box<dyn Item + Send + Sync>> =
-        items.into_iter().map(|i| Box::new(i) as Box<dyn Item + Send + Sync>).collect();
+    let items: Vec<Box<dyn Item + Send + Sync>> = items
+        .into_iter()
+        .map(|i| Box::new(i) as Box<dyn Item + Send + Sync>)
+        .collect();
     list::new(items, Box::new(ItemDelegate_), 10, 10)
 }
 
@@ -54,18 +56,27 @@ fn new_list(items: Vec<Item_>) -> Model {
 fn test_status_bar_item_name() {
     let mut list = new_list(vec![Item_("foo".into()), Item_("bar".into())]);
     let expected = "2 items";
-    assert!(list.view().contains(expected), "expected view to contain {expected}");
+    assert!(
+        list.view().contains(expected),
+        "expected view to contain {expected}"
+    );
 
     list.set_items(vec![Box::new(Item_("foo".into()))]);
     let expected = "1 item";
-    assert!(list.view().contains(expected), "expected view to contain {expected}");
+    assert!(
+        list.view().contains(expected),
+        "expected view to contain {expected}"
+    );
 }
 
 #[test]
 fn test_status_bar_without_items() {
     let list = new_list(vec![]);
     let expected = "No items";
-    assert!(list.view().contains(expected), "expected view to contain {expected}");
+    assert!(
+        list.view().contains(expected),
+        "expected view to contain {expected}"
+    );
 }
 
 #[test]
@@ -74,20 +85,33 @@ fn test_custom_status_bar_item_name() {
     list.set_status_bar_item_name("connection", "connections");
 
     let expected = "2 connections";
-    assert!(list.view().contains(expected), "expected view to contain {expected}");
+    assert!(
+        list.view().contains(expected),
+        "expected view to contain {expected}"
+    );
 
     list.set_items(vec![Box::new(Item_("foo".into()))]);
     let expected = "1 connection";
-    assert!(list.view().contains(expected), "expected view to contain {expected}");
+    assert!(
+        list.view().contains(expected),
+        "expected view to contain {expected}"
+    );
 
     list.set_items(vec![]);
     let expected = "No connections";
-    assert!(list.view().contains(expected), "expected view to contain {expected}");
+    assert!(
+        list.view().contains(expected),
+        "expected view to contain {expected}"
+    );
 }
 
 #[test]
 fn test_set_filter_text() {
-    let tc: Vec<Item_> = vec![Item_("foo".into()), Item_("bar".into()), Item_("baz".into())];
+    let tc: Vec<Item_> = vec![
+        Item_("foo".into()),
+        Item_("bar".into()),
+        Item_("baz".into()),
+    ];
 
     let mut list = new_list(tc);
     list.set_filter_text("ba");
@@ -112,7 +136,11 @@ fn test_set_filter_text() {
 
 #[test]
 fn test_set_filter_state() {
-    let tc: Vec<Item_> = vec![Item_("foo".into()), Item_("bar".into()), Item_("baz".into())];
+    let tc: Vec<Item_> = vec![
+        Item_("foo".into()),
+        Item_("bar".into()),
+        Item_("baz".into()),
+    ];
 
     let mut list = new_list(tc);
     list.set_filter_text("ba");
@@ -142,5 +170,8 @@ fn test_set_filter_state() {
     let view = list.view();
     let lines: Vec<&str> = view.split('\n').collect();
     let footer = lines[lines.len() - 1];
-    assert!(footer.contains(expected), "expected view to contain '{expected}'");
+    assert!(
+        footer.contains(expected),
+        "expected view to contain '{expected}'"
+    );
 }

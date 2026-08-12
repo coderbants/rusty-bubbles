@@ -21,9 +21,9 @@ use charming_bubbletea::key::KeyPressMsg;
 use charming_bubbletea::model::{Cmd, Msg};
 use charming_bubbletea::paste::PasteMsg;
 use charming_lipgloss::{self, Color, Style};
-use unicode_width::UnicodeWidthChar;
 use std::fmt;
 use std::time::Duration;
+use unicode_width::UnicodeWidthChar;
 
 const MIN_HEIGHT: usize = 1;
 const DEFAULT_HEIGHT: usize = 6;
@@ -509,7 +509,7 @@ pub fn new() -> Model {
 pub fn default_styles(is_dark: bool) -> Styles {
     let light_dark = charming_lipgloss::color::light_dark(is_dark);
 
-    let s = Styles {
+    Styles {
         focused: StyleState {
             base: charming_lipgloss::new_style(),
             cursor_line: charming_lipgloss::new_style()
@@ -545,8 +545,7 @@ pub fn default_styles(is_dark: bool) -> Styles {
             blink: true,
             blink_speed: Duration::from_millis(530),
         },
-    };
-    s
+    }
 }
 
 /// DefaultLightStyles returns the default styles for a light background.
@@ -590,8 +589,8 @@ impl Model {
             return;
         }
 
-        self.virtual_cursor.style = charming_lipgloss::new_style()
-            .foreground_color(self.styles.cursor.color.clone());
+        self.virtual_cursor.style =
+            charming_lipgloss::new_style().foreground_color(self.styles.cursor.color.clone());
 
         // By default, the blink speed of the cursor is set to a default
         // internally.
@@ -634,7 +633,7 @@ impl Model {
         if self.char_limit > 0 {
             let avail_space = self.char_limit - self.length();
             // If the char limit's been reached, cancel.
-            if avail_space <= 0 {
+            if avail_space == 0 {
                 return;
             }
             // If there's not enough space to paste the whole thing cut the
@@ -813,7 +812,7 @@ impl Model {
         } else {
             // Moving up.
             for _ in 0..(-delta) {
-                if li.row_offset <= 0 && self.row > 0 {
+                if li.row_offset == 0 && self.row > 0 {
                     self.row -= 1;
                     self.col = self.value[self.row].len();
                 } else {
@@ -827,7 +826,7 @@ impl Model {
         let nli = self.line_info();
         self.col = nli.start_column;
 
-        if nli.width <= 0 {
+        if nli.width == 0 {
             self.reposition_view();
             return;
         }
@@ -1020,7 +1019,7 @@ impl Model {
 
         self.set_cursor_column(self.col - 1);
         loop {
-            if self.col <= 0 {
+            if self.col == 0 {
                 break;
             }
             if !self.value[self.row][self.col].is_whitespace() {
@@ -1177,10 +1176,7 @@ impl Model {
         let idxs: Vec<usize> = self.collect_word_right_indices();
         for (char_idx, i) in idxs.iter().enumerate() {
             if char_idx == 0 {
-                self.value[self.row][*i] = self.value[self.row][*i]
-                    .to_uppercase()
-                    .next()
-                    .unwrap();
+                self.value[self.row][*i] = self.value[self.row][*i].to_uppercase().next().unwrap();
             }
         }
     }
@@ -1348,7 +1344,11 @@ impl Model {
 
     /// SetPromptFunc supersedes the Prompt field and sets a dynamic prompt
     /// instead.
-    pub fn set_prompt_func(&mut self, prompt_width: usize, f: Box<dyn Fn(PromptInfo) -> String + Send + Sync>) {
+    pub fn set_prompt_func(
+        &mut self,
+        prompt_width: usize,
+        f: Box<dyn Fn(PromptInfo) -> String + Send + Sync>,
+    ) {
         self.prompt_func = Some(f);
         self.prompt_width = prompt_width;
     }
@@ -1376,7 +1376,9 @@ impl Model {
             + base_style.get_padding_left()
             + base_style.get_border_left_size();
 
-        let y_offset = self.cursor_line_number().saturating_sub(self.viewport.y_offset())
+        let y_offset = self
+            .cursor_line_number()
+            .saturating_sub(self.viewport.y_offset())
             + base_style.get_margin_top()
             + base_style.get_padding_top()
             + base_style.get_border_top_size();
@@ -1406,7 +1408,8 @@ impl Model {
     pub fn set_height(&mut self, h: usize) {
         if self.max_height > 0 {
             self.height = clamp(h, MIN_HEIGHT, self.max_height);
-            self.viewport.set_height(clamp(h, MIN_HEIGHT, self.max_height));
+            self.viewport
+                .set_height(clamp(h, MIN_HEIGHT, self.max_height));
         } else {
             self.height = h.max(MIN_HEIGHT);
             self.viewport.set_height(h.max(MIN_HEIGHT));
@@ -1441,23 +1444,26 @@ impl Model {
 
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
             let k = &m.0;
-            if key::matches(k, &[self.key_map.delete_after_cursor.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.delete_after_cursor)) {
                 self.col = clamp(self.col, 0, self.value[self.row].len());
                 if self.col >= self.value[self.row].len() {
                     self.merge_line_below(self.row);
                 } else {
                     self.delete_after_cursor();
                 }
-            } else if key::matches(k, &[self.key_map.delete_before_cursor.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.delete_before_cursor)) {
                 self.col = clamp(self.col, 0, self.value[self.row].len());
-                if self.col <= 0 {
+                if self.col == 0 {
                     self.merge_line_above(self.row);
                 } else {
                     self.delete_before_cursor();
                 }
-            } else if key::matches(k, &[self.key_map.delete_character_backward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.delete_character_backward),
+            ) {
                 self.col = clamp(self.col, 0, self.value[self.row].len());
-                if self.col <= 0 {
+                if self.col == 0 {
                     self.merge_line_above(self.row);
                 } else if !self.value[self.row].is_empty() {
                     let mut v = self.value[self.row][..self.col.max(1) - 1].to_vec();
@@ -1467,65 +1473,80 @@ impl Model {
                         self.set_cursor_column(self.col - 1);
                     }
                 }
-            } else if key::matches(k, &[self.key_map.delete_character_forward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.delete_character_forward),
+            ) {
                 if !self.value[self.row].is_empty() && self.col < self.value[self.row].len() {
                     self.value[self.row].remove(self.col);
                 }
                 if self.col >= self.value[self.row].len() {
                     self.merge_line_below(self.row);
                 }
-            } else if key::matches(k, &[self.key_map.delete_word_backward.clone()]) {
-                if self.col <= 0 {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.delete_word_backward)) {
+                if self.col == 0 {
                     self.merge_line_above(self.row);
                 } else {
                     self.delete_word_left();
                 }
-            } else if key::matches(k, &[self.key_map.delete_word_forward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.delete_word_forward)) {
                 self.col = clamp(self.col, 0, self.value[self.row].len());
                 if self.col >= self.value[self.row].len() {
                     self.merge_line_below(self.row);
                 } else {
                     self.delete_word_right();
                 }
-            } else if key::matches(k, &[self.key_map.insert_newline.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.insert_newline)) {
                 if self.at_content_limit() {
                     return None;
                 }
                 self.col = clamp(self.col, 0, self.value[self.row].len());
                 self.split_line(self.row, self.col);
-            } else if key::matches(k, &[self.key_map.line_end.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_end)) {
                 self.cursor_end();
-            } else if key::matches(k, &[self.key_map.line_start.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_start)) {
                 self.cursor_start();
-            } else if key::matches(k, &[self.key_map.character_forward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.character_forward)) {
                 self.character_right();
-            } else if key::matches(k, &[self.key_map.line_next.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_next)) {
                 self.cursor_down();
-            } else if key::matches(k, &[self.key_map.word_forward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.word_forward)) {
                 self.word_right();
-            } else if key::matches(k, &[self.key_map.paste.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.paste)) {
                 return self.paste_cmd();
-            } else if key::matches(k, &[self.key_map.character_backward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.character_backward)) {
                 self.character_left(false /* insideLine */);
-            } else if key::matches(k, &[self.key_map.line_previous.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_previous)) {
                 self.cursor_up();
-            } else if key::matches(k, &[self.key_map.word_backward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.word_backward)) {
                 self.word_left();
-            } else if key::matches(k, &[self.key_map.input_begin.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.input_begin)) {
                 self.move_to_begin();
-            } else if key::matches(k, &[self.key_map.input_end.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.input_end)) {
                 self.move_to_end();
-            } else if key::matches(k, &[self.key_map.page_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_up)) {
                 self.page_up();
-            } else if key::matches(k, &[self.key_map.page_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_down)) {
                 self.page_down();
-            } else if key::matches(k, &[self.key_map.lowercase_word_forward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.lowercase_word_forward),
+            ) {
                 self.lowercase_right();
-            } else if key::matches(k, &[self.key_map.uppercase_word_forward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.uppercase_word_forward),
+            ) {
                 self.uppercase_right();
-            } else if key::matches(k, &[self.key_map.capitalize_word_forward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.capitalize_word_forward),
+            ) {
                 self.capitalize_right();
-            } else if key::matches(k, &[self.key_map.transpose_character_backward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.transpose_character_backward),
+            ) {
                 self.transpose_left();
             } else {
                 self.insert_runes_from_user_input(&k.text.chars().collect::<Vec<char>>());
@@ -1656,9 +1677,7 @@ impl Model {
                         };
                         vc.set_char(&ch);
                         s += &style.render(&vc.view());
-                        s += &style.render(&String::from_iter(
-                            wrapped_line[col + 1..].iter(),
-                        ));
+                        s += &style.render(&String::from_iter(wrapped_line[col + 1..].iter()));
                     }
                 } else {
                     s += &style.render(&String::from_iter(wrapped_line.iter()));
@@ -1679,12 +1698,12 @@ impl Model {
 
             // Write end of buffer content
             let left_gutter = self.end_of_buffer_character.to_string();
-            let right_gap_width = self
-                .width()
-                .saturating_sub(string_width(&left_gutter))
-                + widest_line_number;
+            let right_gap_width =
+                self.width().saturating_sub(string_width(&left_gutter)) + widest_line_number;
             let right_gap = " ".repeat(right_gap_width);
-            s += &styles.computed_end_of_buffer().render(&(left_gutter + &right_gap));
+            s += &styles
+                .computed_end_of_buffer()
+                .render(&(left_gutter + &right_gap));
             s += "\n";
         }
 
@@ -1713,11 +1732,7 @@ impl Model {
             });
             let width = charming_lipgloss::size::width(&prompt);
             if width < self.prompt_width {
-                prompt = format!(
-                    "{}{}",
-                    " ".repeat(self.prompt_width - width),
-                    prompt
-                );
+                prompt = format!("{}{}", " ".repeat(self.prompt_width - width), prompt);
             }
         }
 
@@ -1825,9 +1840,7 @@ impl Model {
                     if plines.len() > i {
                         // current line placeholder text
                         let placeholder_line = &plines[i];
-                        let gap = " ".repeat(
-                            self.width.saturating_sub(string_width(&plines[i])),
-                        );
+                        let gap = " ".repeat(self.width.saturating_sub(string_width(&plines[i])));
                         s += &line_style.render(&(placeholder_line.clone() + &gap));
                     } else {
                         // end of line buffer character
@@ -1857,7 +1870,7 @@ impl Model {
         // Note: upstream memoizes via a mutable cache; this port computes
         // the wrap on demand to keep LineInfo usable through &self.
         let _ = &self.cache;
-        wrap(&runes.to_vec(), width)
+        wrap(runes, width)
     }
 
     /// cursorLineNumber returns the line number that the cursor is on.
@@ -1968,7 +1981,7 @@ impl Model {
     /// mergeLineAbove merges the current line the cursor is on with the
     /// line above.
     fn merge_line_above(&mut self, row: usize) {
-        if row <= 0 {
+        if row == 0 {
             return;
         }
 
@@ -2142,9 +2155,7 @@ fn wordwrap(s: &str, limit: usize, breakpoints: &str) -> String {
 
     // addSpace mirrors the upstream helper: the pending space run is
     // written into the buffer.
-    let add_space = |buf: &mut String,
-                         space: &mut String,
-                         cur_width: &mut usize| {
+    let add_space = |buf: &mut String, space: &mut String, cur_width: &mut usize| {
         *cur_width += space.len();
         buf.push_str(space);
         space.clear();
@@ -2152,10 +2163,10 @@ fn wordwrap(s: &str, limit: usize, breakpoints: &str) -> String {
     // addWord mirrors the upstream helper: flush the pending space run,
     // then the current word.
     let add_word = |buf: &mut String,
-                        space: &mut String,
-                        word: &mut String,
-                        cur_width: &mut usize,
-                        word_len: &mut usize| {
+                    space: &mut String,
+                    word: &mut String,
+                    cur_width: &mut usize,
+                    word_len: &mut usize| {
         if word.is_empty() {
             return;
         }
@@ -2165,9 +2176,7 @@ fn wordwrap(s: &str, limit: usize, breakpoints: &str) -> String {
         word.clear();
         *word_len = 0;
     };
-    let add_newline = |buf: &mut String,
-                           space: &mut String,
-                           cur_width: &mut usize| {
+    let add_newline = |buf: &mut String, space: &mut String, cur_width: &mut usize| {
         buf.push('\n');
         *cur_width = 0;
         space.clear();
@@ -2183,14 +2192,32 @@ fn wordwrap(s: &str, limit: usize, breakpoints: &str) -> String {
                 }
                 space.clear();
             }
-            add_word(&mut buf, &mut space, &mut word, &mut cur_width, &mut word_len);
+            add_word(
+                &mut buf,
+                &mut space,
+                &mut word,
+                &mut cur_width,
+                &mut word_len,
+            );
             add_newline(&mut buf, &mut space, &mut cur_width);
         } else if c.is_whitespace() && c != '\u{00A0}' {
-            add_word(&mut buf, &mut space, &mut word, &mut cur_width, &mut word_len);
+            add_word(
+                &mut buf,
+                &mut space,
+                &mut word,
+                &mut cur_width,
+                &mut word_len,
+            );
             space.push(c);
         } else if c == '-' || breakpoints.contains(c) {
             add_space(&mut buf, &mut space, &mut cur_width);
-            add_word(&mut buf, &mut space, &mut word, &mut cur_width, &mut word_len);
+            add_word(
+                &mut buf,
+                &mut space,
+                &mut word,
+                &mut cur_width,
+                &mut word_len,
+            );
             buf.push(c);
             cur_width += 1;
         } else {
@@ -2202,7 +2229,13 @@ fn wordwrap(s: &str, limit: usize, breakpoints: &str) -> String {
         }
     }
 
-    add_word(&mut buf, &mut space, &mut word, &mut cur_width, &mut word_len);
+    add_word(
+        &mut buf,
+        &mut space,
+        &mut word,
+        &mut cur_width,
+        &mut word_len,
+    );
     buf
 }
 

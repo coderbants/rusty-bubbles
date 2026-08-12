@@ -204,7 +204,5 @@ impl Model {
 }
 
 fn tick(id: i32, tag: i32, d: Duration) -> Cmd {
-    commands::tick(d, move |_| {
-        Some(Box::new(TickMsg { id, tag }))
-    })
+    commands::tick(d, move |_| Some(Box::new(TickMsg { id, tag })))
 }

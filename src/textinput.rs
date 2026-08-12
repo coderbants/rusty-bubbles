@@ -14,12 +14,12 @@ use crate::internal::runeutil::{self, Sanitizer};
 use crate::key::{self, Binding};
 use charming_bubbletea::commands;
 use charming_bubbletea::cursor::CursorShape;
+use charming_bubbletea::key::{Key, KeyPressMsg};
 use charming_bubbletea::model::{Cmd, Msg};
 use charming_bubbletea::paste::PasteMsg;
-use charming_bubbletea::key::{KeyPressMsg, Key};
 use charming_lipgloss::{self, Color, Style};
-use unicode_width::UnicodeWidthChar;
 use std::time::Duration;
+use unicode_width::UnicodeWidthChar;
 
 /// Internal messages for clipboard operations.
 #[derive(Debug)]
@@ -384,7 +384,7 @@ impl Model {
             avail_space = self.char_limit - self.value.len();
 
             // If the char limit's been reached, cancel.
-            if avail_space <= 0 {
+            if avail_space == 0 {
                 return;
             }
 
@@ -405,7 +405,7 @@ impl Model {
             self.pos += 1;
             if self.char_limit > 0 {
                 avail_space -= 1;
-                if avail_space <= 0 {
+                if avail_space == 0 {
                     break;
                 }
             }
@@ -421,7 +421,7 @@ impl Model {
     /// If a max width is defined, perform some logic to treat the visible
     /// area as a horizontally scrolling viewport.
     fn handle_overflow(&mut self) {
-        if self.width() <= 0 || string_width(&String::from_iter(self.value.iter())) <= self.width()
+        if self.width() == 0 || string_width(&String::from_iter(self.value.iter())) <= self.width()
         {
             self.offset = 0;
             self.offset_right = self.value.len();
@@ -498,7 +498,7 @@ impl Model {
 
         self.set_cursor(self.pos - 1);
         loop {
-            if self.pos <= 0 {
+            if self.pos == 0 {
                 break;
             }
             if !self.value[self.pos].is_whitespace() {
@@ -644,9 +644,7 @@ impl Model {
 
     fn echo_transform(&self, v: &str) -> String {
         match self.echo_mode {
-            EchoMode::EchoPassword => {
-                self.echo_character.to_string().repeat(string_width(v))
-            }
+            EchoMode::EchoPassword => self.echo_character.to_string().repeat(string_width(v)),
             EchoMode::EchoNone => String::new(),
             EchoMode::EchoNormal => v.to_string(),
         }
@@ -662,13 +660,13 @@ impl Model {
         // and might be double assigned.
         let key_press = msg.as_any().downcast_ref::<KeyPressMsg>();
         if let Some(kp) = key_press {
-            if key::matches(&kp.0, &[self.key_map.accept_suggestion.clone()]) {
-                if self.can_accept_suggestion() {
-                    let suggestion = &self.matched_suggestions[self.current_suggestion_index];
-                    let rest: Vec<char> = suggestion[self.value.len()..].to_vec();
-                    self.value.extend_from_slice(&rest);
-                    self.cursor_end();
-                }
+            if key::matches(&kp.0, std::slice::from_ref(&self.key_map.accept_suggestion))
+                && self.can_accept_suggestion()
+            {
+                let suggestion = &self.matched_suggestions[self.current_suggestion_index];
+                let rest: Vec<char> = suggestion[self.value.len()..].to_vec();
+                self.value.extend_from_slice(&rest);
+                self.cursor_end();
             }
         }
 
@@ -678,9 +676,12 @@ impl Model {
 
         if let Some(kp) = key_press {
             let k: &Key = &kp.0;
-            if key::matches(k, &[self.key_map.delete_word_backward.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.delete_word_backward)) {
                 self.delete_word_backward();
-            } else if key::matches(k, &[self.key_map.delete_character_backward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.delete_character_backward),
+            ) {
                 self.err = None;
                 if !self.value.is_empty() {
                     let mut v = self.value[..self.pos.max(1) - 1].to_vec();
@@ -691,38 +692,41 @@ impl Model {
                         self.set_cursor(self.pos - 1);
                     }
                 }
-            } else if key::matches(k, &[self.key_map.word_backward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.word_backward)) {
                 self.word_backward();
-            } else if key::matches(k, &[self.key_map.character_backward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.character_backward)) {
                 if self.pos > 0 {
                     self.set_cursor(self.pos - 1);
                 }
-            } else if key::matches(k, &[self.key_map.word_forward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.word_forward)) {
                 self.word_forward();
-            } else if key::matches(k, &[self.key_map.character_forward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.character_forward)) {
                 if self.pos < self.value.len() {
                     self.set_cursor(self.pos + 1);
                 }
-            } else if key::matches(k, &[self.key_map.line_start.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_start)) {
                 self.cursor_start();
-            } else if key::matches(k, &[self.key_map.delete_character_forward.clone()]) {
+            } else if key::matches(
+                k,
+                std::slice::from_ref(&self.key_map.delete_character_forward),
+            ) {
                 if !self.value.is_empty() && self.pos < self.value.len() {
                     self.value.remove(self.pos);
                     self.err = self.validate(&self.value);
                 }
-            } else if key::matches(k, &[self.key_map.line_end.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_end)) {
                 self.cursor_end();
-            } else if key::matches(k, &[self.key_map.delete_after_cursor.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.delete_after_cursor)) {
                 self.delete_after_cursor();
-            } else if key::matches(k, &[self.key_map.delete_before_cursor.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.delete_before_cursor)) {
                 self.delete_before_cursor();
-            } else if key::matches(k, &[self.key_map.paste.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.paste)) {
                 return self.paste();
-            } else if key::matches(k, &[self.key_map.delete_word_forward.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.delete_word_forward)) {
                 self.delete_word_forward();
-            } else if key::matches(k, &[self.key_map.next_suggestion.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.next_suggestion)) {
                 self.next_suggestion();
-            } else if key::matches(k, &[self.key_map.prev_suggestion.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.prev_suggestion)) {
                 self.previous_suggestion();
             } else {
                 // Input one or more regular characters.
@@ -775,7 +779,8 @@ impl Model {
 
         let value = &self.value[self.offset..self.offset_right];
         let pos = self.pos.max(0) - self.offset;
-        let mut v = style_text.render(&self.echo_transform(&String::from_iter(value[..pos].iter())));
+        let mut v =
+            style_text.render(&self.echo_transform(&String::from_iter(value[..pos].iter())));
 
         // The upstream View() operates on a copy of the model, so cursor
         // mutations are applied to a local clone here.
@@ -785,28 +790,25 @@ impl Model {
             let char = self.echo_transform(&String::from_iter(value[pos..pos + 1].iter()));
             vc.set_char(&char);
             v += &vc.view(); // cursor and text under it
-            v += &style_text.render(&self.echo_transform(&String::from_iter(
-                value[pos + 1..].iter(),
-            ))); // text after cursor
+            v += &style_text
+                .render(&self.echo_transform(&String::from_iter(value[pos + 1..].iter()))); // text after cursor
             v += &self.completion_view(0); // suggested completion
-        } else {
-            if self.focus && self.can_accept_suggestion() {
-                let suggestion = &self.matched_suggestions[self.current_suggestion_index];
-                if value.len() < suggestion.len() {
-                    vc.text_style = styles.suggestion.clone();
-                    vc.set_char(&self.echo_transform(&String::from_iter(
-                        suggestion[pos..pos + 1].iter(),
-                    )));
-                    v += &vc.view();
-                    v += &self.completion_view(1);
-                } else {
-                    vc.set_char(" ");
-                    v += &vc.view();
-                }
+        } else if self.focus && self.can_accept_suggestion() {
+            let suggestion = &self.matched_suggestions[self.current_suggestion_index];
+            if value.len() < suggestion.len() {
+                vc.text_style = styles.suggestion.clone();
+                vc.set_char(
+                    &self.echo_transform(&String::from_iter(suggestion[pos..pos + 1].iter())),
+                );
+                v += &vc.view();
+                v += &self.completion_view(1);
             } else {
                 vc.set_char(" ");
                 v += &vc.view();
             }
+        } else {
+            vc.set_char(" ");
+            v += &vc.view();
         }
 
         // If a max width and background color were set fill the empty spaces
@@ -884,14 +886,19 @@ impl Model {
                 .suggestion
                 .clone()
                 .inline(true)
-                .render(&String::from_iter(suggestion[value.len() + offset..].iter()));
+                .render(&String::from_iter(
+                    suggestion[value.len() + offset..].iter(),
+                ));
         }
         String::new()
     }
 
     /// AvailableSuggestions returns the list of available suggestions.
     pub fn available_suggestions(&self) -> Vec<String> {
-        self.suggestions.iter().map(|s| String::from_iter(s.iter())).collect()
+        self.suggestions
+            .iter()
+            .map(|s| String::from_iter(s.iter()))
+            .collect()
     }
 
     /// MatchedSuggestions returns the list of matched suggestions.
@@ -972,10 +979,7 @@ impl Model {
         match &self.validate {
             Some(f) => {
                 let s = String::from_iter(v.iter());
-                match f(&s) {
-                    Ok(()) => None,
-                    Err(e) => Some(e),
-                }
+                f(&s).err()
             }
             None => None,
         }
@@ -1044,7 +1048,7 @@ fn string_width(s: &str) -> usize {
 pub fn default_styles(is_dark: bool) -> Styles {
     let light_dark = charming_lipgloss::color::light_dark(is_dark);
 
-    let s = Styles {
+    Styles {
         focused: StyleState {
             placeholder: Style::new().foreground("240"),
             suggestion: Style::new().foreground("240"),
@@ -1055,10 +1059,7 @@ pub fn default_styles(is_dark: bool) -> Styles {
             placeholder: Style::new().foreground("240"),
             suggestion: Style::new().foreground("240"),
             prompt: Style::new().foreground("7"),
-            text: Style::new().foreground_color(light_dark(
-                Color::parse("245"),
-                Color::parse("7"),
-            )),
+            text: Style::new().foreground_color(light_dark(Color::parse("245"), Color::parse("7"))),
         },
         cursor: CursorStyle {
             color: Color::parse("7"),
@@ -1066,8 +1067,7 @@ pub fn default_styles(is_dark: bool) -> Styles {
             blink: true,
             blink_speed: Duration::from_millis(530),
         },
-    };
-    s
+    }
 }
 
 /// DefaultLightStyles returns the default styles for a light background.

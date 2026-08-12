@@ -1,8 +1,8 @@
 //! Cleanroom Rust port of upstream Go source file: `internal/memoization/memoization.go`
 //! Upstream Target Tag / Version: `v2.1.0`
 
-use std::collections::HashMap;
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 
 /// Hasher is an interface that requires a Hash method. The Hash method is
 /// expected to return a string representation of the hash of the object.

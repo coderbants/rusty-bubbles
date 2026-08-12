@@ -156,7 +156,13 @@ fn test_cache() {
                 ActionType::Get => {
                     let got = cache.get(&key).cloned();
                     let want = action.expected_value.clone().unwrap_or_default();
-                    assert_eq!(got.unwrap_or_default(), want, "{}: Get({})", tt.name, action.key);
+                    assert_eq!(
+                        got.unwrap_or_default(),
+                        want,
+                        "{}: Get({})",
+                        tt.name,
+                        action.key
+                    );
                 }
             }
         }
@@ -174,7 +180,7 @@ fn fuzz_cache_seeds() {
     ];
 
     for seed in seeds {
-        if seed.len() < 1 {
+        if seed.is_empty() {
             continue;
         }
         let mut cache: memoization::MemoCache<i64> = memoization::new_memo_cache(10);

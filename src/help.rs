@@ -56,12 +56,12 @@ pub struct Styles {
 pub fn default_styles(is_dark: bool) -> Styles {
     let light_dark = charming_lipgloss::color::light_dark(is_dark);
 
-    let key_style = Style::new()
-        .foreground_color(light_dark(Color::parse("#909090"), Color::parse("#626262")));
-    let desc_style = Style::new()
-        .foreground_color(light_dark(Color::parse("#B2B2B2"), Color::parse("#4A4A4A")));
-    let sep_style = Style::new()
-        .foreground_color(light_dark(Color::parse("#DADADA"), Color::parse("#3C3C3C")));
+    let key_style =
+        Style::new().foreground_color(light_dark(Color::parse("#909090"), Color::parse("#626262")));
+    let desc_style =
+        Style::new().foreground_color(light_dark(Color::parse("#B2B2B2"), Color::parse("#4A4A4A")));
+    let sep_style =
+        Style::new().foreground_color(light_dark(Color::parse("#DADADA"), Color::parse("#3C3C3C")));
 
     Styles {
         short_key: key_style.clone(),
@@ -172,9 +172,19 @@ impl Model {
 
             // Item
             let str = sep
-                + &self.styles.short_key.clone().inline(true).render(&kb.help().key)
+                + &self
+                    .styles
+                    .short_key
+                    .clone()
+                    .inline(true)
+                    .render(&kb.help().key)
                 + " "
-                + &self.styles.short_desc.clone().inline(true).render(&kb.help().desc);
+                + &self
+                    .styles
+                    .short_desc
+                    .clone()
+                    .inline(true)
+                    .render(&kb.help().desc);
             let w = charming_lipgloss::size::width(&str);
 
             // Tail
@@ -214,16 +224,15 @@ impl Model {
             if group.is_empty() || !should_render_column(group) {
                 continue;
             }
-            let sep;
             let mut keys: Vec<String> = Vec::new();
             let mut descriptions: Vec<String> = Vec::new();
 
             // Sep
-            if total_width > 0 && i < groups.len() {
-                sep = separator.clone();
+            let sep = if total_width > 0 && i < groups.len() {
+                separator.clone()
             } else {
-                sep = String::new();
-            }
+                String::new()
+            };
 
             // Separate keys and descriptions into different slices
             for kb in group {
@@ -236,11 +245,13 @@ impl Model {
 
             // Column
             let key_col = self.styles.full_key.clone().render(&keys.join("\n"));
-            let desc_col = self.styles.full_desc.clone().render(&descriptions.join("\n"));
-            let col = charming_lipgloss::join::join_horizontal(
-                TOP,
-                &[&sep, &key_col, " ", &desc_col],
-            );
+            let desc_col = self
+                .styles
+                .full_desc
+                .clone()
+                .render(&descriptions.join("\n"));
+            let col =
+                charming_lipgloss::join::join_horizontal(TOP, &[&sep, &key_col, " ", &desc_col]);
             let w = charming_lipgloss::size::width(&col);
 
             // Tail

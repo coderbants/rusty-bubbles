@@ -157,9 +157,7 @@ pub struct Styles {
 /// DefaultStyles returns a set of default style definitions for this table.
 pub fn default_styles() -> Styles {
     Styles {
-        selected: charming_lipgloss::new_style()
-            .bold(true)
-            .foreground("212"),
+        selected: charming_lipgloss::new_style().bold(true).foreground("212"),
         header: charming_lipgloss::new_style().bold(true).padding(&[0, 1]),
         cell: charming_lipgloss::new_style().padding(&[0, 1]),
     }
@@ -269,21 +267,21 @@ impl Model {
 
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
             let k = &m.0;
-            if key::matches(k, &[self.key_map.line_up.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.line_up)) {
                 self.move_up(1);
-            } else if key::matches(k, &[self.key_map.line_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.line_down)) {
                 self.move_down(1);
-            } else if key::matches(k, &[self.key_map.page_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_up)) {
                 self.move_up(self.viewport.height());
-            } else if key::matches(k, &[self.key_map.page_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_down)) {
                 self.move_down(self.viewport.height());
-            } else if key::matches(k, &[self.key_map.half_page_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.half_page_up)) {
                 self.move_up(self.viewport.height() / 2);
-            } else if key::matches(k, &[self.key_map.half_page_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.half_page_down)) {
                 self.move_down(self.viewport.height() / 2);
-            } else if key::matches(k, &[self.key_map.goto_top.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.goto_top)) {
                 self.goto_top();
-            } else if key::matches(k, &[self.key_map.goto_bottom.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.goto_bottom)) {
                 self.goto_bottom();
             }
         }
@@ -330,15 +328,26 @@ impl Model {
         // m.cursor+m.viewport.Height. Constant runtime, independent of
         // number of rows in a table. Limits the number of renderedRows to a
         // maximum of 2*m.viewport.Height.
-        self.start = clamp(self.cursor.saturating_sub(self.viewport.height()), 0, self.cursor);
-        self.end = clamp(self.cursor + self.viewport.height(), self.cursor, self.rows.len());
+        self.start = clamp(
+            self.cursor.saturating_sub(self.viewport.height()),
+            0,
+            self.cursor,
+        );
+        self.end = clamp(
+            self.cursor + self.viewport.height(),
+            self.cursor,
+            self.rows.len(),
+        );
         for i in self.start..self.end {
             rendered_rows.push(self.render_row(i));
         }
 
         let refs: Vec<&str> = rendered_rows.iter().map(|s| s.as_str()).collect();
         self.viewport
-            .set_content(&charming_lipgloss::join::join_vertical(charming_lipgloss::LEFT, &refs));
+            .set_content(&charming_lipgloss::join::join_vertical(
+                charming_lipgloss::LEFT,
+                &refs,
+            ));
     }
 
     /// SelectedRow returns the selected row.
@@ -416,17 +425,17 @@ impl Model {
     pub fn move_up(&mut self, n: usize) {
         // Upstream uses signed ints and clamps to 0; saturating subtraction
         // mirrors that without overflowing.
-        self.cursor = clamp(self.cursor.saturating_sub(n), 0, self.rows.len().saturating_sub(1));
+        self.cursor = clamp(
+            self.cursor.saturating_sub(n),
+            0,
+            self.rows.len().saturating_sub(1),
+        );
 
         let mut offset = self.viewport.y_offset();
         if self.start == 0 {
             offset = clamp(offset, 0, self.cursor);
         } else if self.start < self.viewport.height() {
-            offset = clamp(
-                clamp(offset + n, 0, self.cursor),
-                0,
-                self.viewport.height(),
-            );
+            offset = clamp(clamp(offset + n, 0, self.cursor), 0, self.viewport.height());
         } else if offset >= 1 {
             offset = clamp(offset + n, 1, self.viewport.height());
         }
@@ -484,14 +493,15 @@ impl Model {
     fn headers_view(&self) -> String {
         let mut s: Vec<String> = Vec::with_capacity(self.cols.len());
         for col in &self.cols {
-            if col.width <= 0 {
+            if col.width == 0 {
                 continue;
             }
             let style = charming_lipgloss::new_style()
                 .width(col.width)
                 .max_width(col.width)
                 .inline(true);
-            let rendered_cell = style.render(&charming_x_ansi::truncate(&col.title, col.width, "…"));
+            let rendered_cell =
+                style.render(&charming_x_ansi::truncate(&col.title, col.width, "…"));
             s.push(self.styles.header.clone().render(&rendered_cell));
         }
         let refs: Vec<&str> = s.iter().map(|x| x.as_str()).collect();
@@ -501,14 +511,15 @@ impl Model {
     fn render_row(&self, r: usize) -> String {
         let mut s: Vec<String> = Vec::with_capacity(self.cols.len());
         for (i, value) in self.rows[r].iter().enumerate() {
-            if self.cols[i].width <= 0 {
+            if self.cols[i].width == 0 {
                 continue;
             }
             let style = charming_lipgloss::new_style()
                 .width(self.cols[i].width)
                 .max_width(self.cols[i].width)
                 .inline(true);
-            let rendered_cell = style.render(&charming_x_ansi::truncate(value, self.cols[i].width, "…"));
+            let rendered_cell =
+                style.render(&charming_x_ansi::truncate(value, self.cols[i].width, "…"));
             s.push(self.styles.cell.clone().render(&rendered_cell));
         }
 

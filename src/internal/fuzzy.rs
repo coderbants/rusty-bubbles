@@ -92,7 +92,8 @@ pub fn find_no_sort(pattern: &str, data: &[String]) -> Vec<Match> {
                         score += MATCH_FOLLOWING_SEPARATOR_BONUS;
                     }
                     if let Some(&last_match) = match_.matched_indexes.last() {
-                        let bonus = adjacent_char_bonus(last_index, last_match, curr_adjacent_match_bonus);
+                        let bonus =
+                            adjacent_char_bonus(last_index, last_match, curr_adjacent_match_bonus);
                         score += bonus;
                         // adjacent matches are incremental and keep
                         // increasing based on previous adjacent matches thus
@@ -119,19 +120,18 @@ pub fn find_no_sort(pattern: &str, data: &[String]) -> Vec<Match> {
             // or when the search string has ended. Tracking when the next
             // match is coming up allows us to exhaustively find the best
             // match and not necessarily the first match.
-            if (nextp.is_some() && nextc.is_some() && equal_fold(nextp.unwrap(), nextc.unwrap()))
-                || nextc.is_none()
+            if ((nextp.is_some() && nextc.is_some() && equal_fold(nextp.unwrap(), nextc.unwrap()))
+                || nextc.is_none())
+                && matched_index > -1
             {
-                if matched_index > -1 {
-                    if match_.matched_indexes.is_empty() {
-                        let penalty = matched_index as i32 * UNMATCHED_LEADING_CHAR_PENALTY;
-                        best_score += max(penalty, MAX_UNMATCHED_LEADING_CHAR_PENALTY);
-                    }
-                    match_.score += best_score;
-                    match_.matched_indexes.push(matched_index as usize);
-                    best_score = -1;
-                    pattern_index += 1;
+                if match_.matched_indexes.is_empty() {
+                    let penalty = matched_index as i32 * UNMATCHED_LEADING_CHAR_PENALTY;
+                    best_score += max(penalty, MAX_UNMATCHED_LEADING_CHAR_PENALTY);
                 }
+                match_.score += best_score;
+                match_.matched_indexes.push(matched_index as usize);
+                best_score = -1;
+                pattern_index += 1;
             }
             last_index = j;
             last = candidate;

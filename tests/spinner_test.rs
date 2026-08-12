@@ -22,7 +22,10 @@ fn assert_equal_spinner(exp: &spinner::Spinner, got: &spinner::Spinner) {
     );
     for (i, e) in exp.frames.iter().enumerate() {
         let g = &got.frames[i];
-        assert_eq!(e, g, "expecting frame index {i} with value {e:?}, got {g:?}");
+        assert_eq!(
+            e, g,
+            "expecting frame index {i} with value {e:?}, got {g:?}"
+        );
     }
 }
 
@@ -32,7 +35,12 @@ fn test_spinner_new() {
     assert_equal_spinner(&spinner::line(), &s.spinner);
 
     let custom_spinner = spinner::Spinner {
-        frames: vec!["a".to_string(), "b".to_string(), "c".to_string(), "d".to_string()],
+        frames: vec![
+            "a".to_string(),
+            "b".to_string(),
+            "c".to_string(),
+            "d".to_string(),
+        ],
         fps: std::time::Duration::from_millis(16),
     };
     let s = spinner::new(vec![spinner::with_spinner(custom_spinner.clone())]);
@@ -50,6 +58,9 @@ fn test_spinner_new() {
         ("Monkey", spinner::monkey()),
     ];
     for (_name, s_spin) in tests {
-        assert_equal_spinner(&spinner::new(vec![spinner::with_spinner(s_spin.clone())]).spinner, &s_spin);
+        assert_equal_spinner(
+            &spinner::new(vec![spinner::with_spinner(s_spin.clone())]).spinner,
+            &s_spin,
+        );
     }
 }

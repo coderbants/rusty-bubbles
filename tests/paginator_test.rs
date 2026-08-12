@@ -9,7 +9,11 @@ use charming_bubbletea::key::{Key, KeyMod, KeyPressMsg};
 use charming_bubbletea::model::Msg;
 
 fn key_press(key: char) -> Box<dyn Msg> {
-    Box::new(KeyPressMsg(Key::new(key, &key.to_string(), KeyMod::default())))
+    Box::new(KeyPressMsg(Key::new(
+        key,
+        &key.to_string(),
+        KeyMod::default(),
+    )))
 }
 
 fn arrow(name: &str) -> Box<dyn Msg> {
@@ -40,10 +44,18 @@ fn test_paginator_arrows_mixed_directions() {
     for _ in 0..20 {
         m.update(&*arrow("right"));
     }
-    assert_eq!(m.page, m.total_pages - 1, "right x20 clamps at the last page");
+    assert_eq!(
+        m.page,
+        m.total_pages - 1,
+        "right x20 clamps at the last page"
+    );
 
     m.update(&*arrow("left"));
-    assert_eq!(m.page, m.total_pages - 2, "left after the clamp goes back one");
+    assert_eq!(
+        m.page,
+        m.total_pages - 2,
+        "left after the clamp goes back one"
+    );
 }
 
 #[test]

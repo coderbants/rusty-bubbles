@@ -266,7 +266,7 @@ impl Model {
     /// AtTop returns whether or not the viewport is at the very top
     /// position.
     pub fn at_top(&self) -> bool {
-        self.y_offset() <= 0
+        self.y_offset() == 0
     }
 
     /// AtBottom returns whether or not the viewport is at or past the very
@@ -333,12 +333,10 @@ impl Model {
                 }
 
                 self.lines[i] = self.lines[i].replace("\r\n", "\n"); // normalize line endings
-                sub_lines = self.lines[i]
-                    .split('\n')
-                    .map(|x| x.to_string())
-                    .collect();
+                sub_lines = self.lines[i].split('\n').map(|x| x.to_string()).collect();
                 if sub_lines.len() > 1 {
-                    self.lines.splice(i + 1..i + 1, sub_lines[1..].iter().cloned());
+                    self.lines
+                        .splice(i + 1..i + 1, sub_lines[1..].iter().cloned());
                     self.lines[i] = sub_lines[0].clone();
                 }
             }
@@ -374,9 +372,8 @@ impl Model {
         let mut voffset = 0usize;
 
         for (i, line) in self.lines.iter().enumerate() {
-            let line_height = 1usize.max(
-                (charming_x_ansi::string_width(line) as f64 / max_width).ceil() as usize,
-            );
+            let line_height = 1usize
+                .max((charming_x_ansi::string_width(line) as f64 / max_width).ceil() as usize);
 
             if yoffset >= total && yoffset < total + line_height {
                 ridx = i;
@@ -427,7 +424,8 @@ impl Model {
     /// maxHeight returns the maximum height of the viewport. It accounts for
     /// the frame size.
     fn max_height(&self) -> usize {
-        self.height().saturating_sub(self.style.get_vertical_frame_size())
+        self.height()
+            .saturating_sub(self.style.get_vertical_frame_size())
     }
 
     /// visibleLines returns the lines that should currently be visible in
@@ -444,10 +442,7 @@ impl Model {
         let mut lines: Vec<String> = vec![];
         if total > 0 {
             let bottom = clamp(ridx + max_height, ridx, self.lines.len());
-            lines = self.style_lines(
-                self.lines[ridx..bottom].to_vec(),
-                ridx,
-            );
+            lines = self.style_lines(self.lines[ridx..bottom].to_vec(), ridx);
             lines = self.highlight_lines(lines, ridx);
         }
 
@@ -494,7 +489,8 @@ impl Model {
             .iter()
             .enumerate()
             .map(|(i, line)| {
-                let ranges = make_highlight_ranges(&self.highlights, i + offset, &self.highlight_style);
+                let ranges =
+                    make_highlight_ranges(&self.highlights, i + offset, &self.highlight_style);
                 if self.hi_idx >= 0 {
                     let sel = &self.highlights[self.hi_idx as usize];
                     if let Some(hi) = sel.lines.get(&(i + offset)) {
@@ -784,7 +780,8 @@ impl Model {
         if self.highlights.is_empty() {
             return;
         }
-        self.hi_idx = (self.hi_idx - 1 + self.highlights.len() as isize) % self.highlights.len() as isize;
+        self.hi_idx =
+            (self.hi_idx - 1 + self.highlights.len() as isize) % self.highlights.len() as isize;
         self.show_highlight();
     }
 
@@ -810,21 +807,21 @@ impl Model {
 
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
             let k = &m.0;
-            if key::matches(k, &[self.key_map.page_down.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.page_down)) {
                 self.page_down();
-            } else if key::matches(k, &[self.key_map.page_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_up)) {
                 self.page_up();
-            } else if key::matches(k, &[self.key_map.half_page_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.half_page_down)) {
                 self.half_page_down();
-            } else if key::matches(k, &[self.key_map.half_page_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.half_page_up)) {
                 self.half_page_up();
-            } else if key::matches(k, &[self.key_map.down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.down)) {
                 self.scroll_down(1);
-            } else if key::matches(k, &[self.key_map.up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.up)) {
                 self.scroll_up(1);
-            } else if key::matches(k, &[self.key_map.left.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.left)) {
                 self.scroll_left(self.horizontal_step);
-            } else if key::matches(k, &[self.key_map.right.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.right)) {
                 self.scroll_right(self.horizontal_step);
             }
             return;
@@ -839,7 +836,10 @@ impl Model {
                 MouseButton::MouseWheelDown => {
                     // NOTE: some terminal emulators don't send the shift
                     // event for mouse actions.
-                    if mouse.mod_keys.contains(charming_bubbletea::key::KeyMod::SHIFT) {
+                    if mouse
+                        .mod_keys
+                        .contains(charming_bubbletea::key::KeyMod::SHIFT)
+                    {
                         self.scroll_right(self.horizontal_step);
                         return;
                     }
@@ -848,7 +848,10 @@ impl Model {
                 MouseButton::MouseWheelUp => {
                     // NOTE: some terminal emulators don't send the shift
                     // event for mouse actions.
-                    if mouse.mod_keys.contains(charming_bubbletea::key::KeyMod::SHIFT) {
+                    if mouse
+                        .mod_keys
+                        .contains(charming_bubbletea::key::KeyMod::SHIFT)
+                    {
                         self.scroll_left(self.horizontal_step);
                         return;
                     }
@@ -1082,18 +1085,18 @@ fn char_at(s: &[u8], byte_pos: usize) -> char {
         .unwrap_or('\u{FFFD}')
 }
 
-fn make_highlight_ranges(
-    highlights: &[HighlightInfo],
-    line: usize,
-    style: &Style,
-) -> Vec<Range> {
+fn make_highlight_ranges(highlights: &[HighlightInfo], line: usize, style: &Style) -> Vec<Range> {
     let mut result: Vec<Range> = vec![];
     for hi in highlights {
         if let Some(lihi) = hi.lines.get(&line) {
             if *lihi == (0, 0) {
                 continue;
             }
-            result.push(charming_lipgloss::ranges::new_range(lihi.0, lihi.1, style.clone()));
+            result.push(charming_lipgloss::ranges::new_range(
+                lihi.0,
+                lihi.1,
+                style.clone(),
+            ));
         }
     }
     result

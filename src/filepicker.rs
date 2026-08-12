@@ -110,14 +110,8 @@ pub struct KeyMap {
 /// DefaultKeyMap defines the default keybindings.
 pub fn default_key_map() -> KeyMap {
     KeyMap {
-        go_to_top: key::new_binding(vec![
-            key::with_keys(&["g"]),
-            key::with_help("g", "first"),
-        ]),
-        go_to_last: key::new_binding(vec![
-            key::with_keys(&["G"]),
-            key::with_help("G", "last"),
-        ]),
+        go_to_top: key::new_binding(vec![key::with_keys(&["g"]), key::with_help("g", "first")]),
+        go_to_last: key::new_binding(vec![key::with_keys(&["G"]), key::with_help("G", "last")]),
         down: key::new_binding(vec![
             key::with_keys(&["j", "down", "ctrl+n"]),
             key::with_help("j", "down"),
@@ -302,12 +296,7 @@ impl Model {
                     let (is_dir, size, mode_string, is_symlink) = match metadata {
                         Ok(md) => {
                             let is_symlink = md.file_type().is_symlink();
-                            (
-                                md.is_dir(),
-                                md.len(),
-                                file_mode_string(&md),
-                                is_symlink,
-                            )
+                            (md.is_dir(), md.len(), file_mode_string(&md), is_symlink)
                         }
                         Err(_) => (false, 0, "----------".to_string(), false),
                     };
@@ -376,11 +365,14 @@ impl Model {
             return None;
         }
 
-        if let Some(_) = msg.as_any().downcast_ref::<ErrorMsg>() {
+        if msg.as_any().downcast_ref::<ErrorMsg>().is_some() {
             return None;
         }
 
-        if let Some(m) = msg.as_any().downcast_ref::<charming_bubbletea::screen::WindowSizeMsg>() {
+        if let Some(m) = msg
+            .as_any()
+            .downcast_ref::<charming_bubbletea::screen::WindowSizeMsg>()
+        {
             if self.auto_height {
                 self.set_height(m.height - MARGIN_BOTTOM);
             }
@@ -390,15 +382,15 @@ impl Model {
 
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
             let k = &m.0;
-            if key::matches(k, &[self.key_map.go_to_top.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.go_to_top)) {
                 self.selected = 0;
                 self.min_idx = 0;
                 self.max_idx = self.height() - 1;
-            } else if key::matches(k, &[self.key_map.go_to_last.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.go_to_last)) {
                 self.selected = self.files.len().saturating_sub(1);
                 self.min_idx = self.files.len() - self.height();
                 self.max_idx = self.files.len() - 1;
-            } else if key::matches(k, &[self.key_map.down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.down)) {
                 self.selected += 1;
                 if self.selected >= self.files.len() {
                     self.selected = self.files.len().saturating_sub(1);
@@ -407,13 +399,13 @@ impl Model {
                     self.min_idx += 1;
                     self.max_idx += 1;
                 }
-            } else if key::matches(k, &[self.key_map.up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.up)) {
                 self.selected = self.selected.saturating_sub(1);
                 if self.selected < self.min_idx {
                     self.min_idx = self.min_idx.saturating_sub(1);
                     self.max_idx = self.max_idx.saturating_sub(1);
                 }
-            } else if key::matches(k, &[self.key_map.page_down.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_down)) {
                 self.selected += self.height();
                 if self.selected >= self.files.len() {
                     self.selected = self.files.len().saturating_sub(1);
@@ -425,7 +417,7 @@ impl Model {
                     self.max_idx = self.files.len() - 1;
                     self.min_idx = self.max_idx - self.height();
                 }
-            } else if key::matches(k, &[self.key_map.page_up.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.page_up)) {
                 self.selected = self.selected.saturating_sub(self.height());
                 self.min_idx = self.min_idx.saturating_sub(self.height());
                 self.max_idx = self.max_idx.saturating_sub(self.height());
@@ -434,7 +426,7 @@ impl Model {
                     // minIdx < 0 => 0; maxIdx = minIdx + Height
                     self.max_idx = self.min_idx + self.height();
                 }
-            } else if key::matches(k, &[self.key_map.back.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.back)) {
                 self.current_directory = Path::new(&self.current_directory)
                     .parent()
                     .map(|p| p.to_string_lossy().to_string())
@@ -450,7 +442,7 @@ impl Model {
                     self.max_idx = self.height() - 1;
                 }
                 return self.read_dir_cmd(&self.current_directory.clone(), self.show_hidden);
-            } else if key::matches(k, &[self.key_map.open.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.open)) {
                 if self.files.is_empty() {
                     return None;
                 }
@@ -469,14 +461,14 @@ impl Model {
                     }
                 }
 
-                if (!is_dir && self.file_allowed) || (is_dir && self.dir_allowed) {
-                    if key::matches(k, &[self.key_map.select.clone()]) {
-                        // Select the current path as the selection
-                        self.path = PathBuf::from(&self.current_directory)
-                            .join(&f.name)
-                            .to_string_lossy()
-                            .to_string();
-                    }
+                if ((!is_dir && self.file_allowed) || (is_dir && self.dir_allowed))
+                    && key::matches(k, std::slice::from_ref(&self.key_map.select))
+                {
+                    // Select the current path as the selection
+                    self.path = PathBuf::from(&self.current_directory)
+                        .join(&f.name)
+                        .to_string_lossy()
+                        .to_string();
                 }
 
                 if !is_dir {
@@ -539,7 +531,11 @@ impl Model {
                     selected += &f.mode_string;
                 }
                 if self.show_size {
-                    selected += &format!("{:>width$}", size, width = self.styles.file_size.get_width());
+                    selected += &format!(
+                        "{:>width$}",
+                        size,
+                        width = self.styles.file_size.get_width()
+                    );
                 }
                 selected += " ";
                 selected += name;
@@ -621,7 +617,7 @@ impl Model {
             Some(m) => {
                 // If the msg does not match the Select keymap then this
                 // could not have been a selection.
-                if !key::matches(&m.0, &[self.key_map.select.clone()]) {
+                if !key::matches(&m.0, std::slice::from_ref(&self.key_map.select)) {
                     return (false, String::new());
                 }
 
@@ -777,11 +773,9 @@ fn file_mode_string(md: &std::fs::Metadata) -> String {
                 let c = s.pop().unwrap();
                 s.push(if c == 'x' { 's' } else { 'S' });
             }
-        } else if i == 8 {
-            if perm & 0o1000 != 0 {
-                let c = s.pop().unwrap();
-                s.push(if c == 'x' { 't' } else { 'T' });
-            }
+        } else if i == 8 && perm & 0o1000 != 0 {
+            let c = s.pop().unwrap();
+            s.push(if c == 'x' { 't' } else { 'T' });
         }
     }
     s

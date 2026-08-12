@@ -10,8 +10,8 @@
 //! </public-docs>
 
 use crate::key::{self, Binding};
+use charming_bubbletea::key::{Key, KeyPressMsg};
 use charming_bubbletea::model::{Cmd, Msg};
-use charming_bubbletea::key::{KeyPressMsg, Key};
 
 /// Type specifies the way we render pagination.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -73,7 +73,7 @@ impl Model {
             return self.total_pages;
         }
         let mut n = items / self.per_page;
-        if items % self.per_page > 0 {
+        if !items.is_multiple_of(self.per_page) {
             n += 1;
         }
         self.total_pages = n;
@@ -140,9 +140,9 @@ impl Model {
     pub fn update(&mut self, msg: &dyn Msg) -> Cmd {
         if let Some(m) = msg.as_any().downcast_ref::<KeyPressMsg>() {
             let k: &Key = &m.0;
-            if key::matches(k, &[self.key_map.next_page.clone()]) {
+            if key::matches(k, std::slice::from_ref(&self.key_map.next_page)) {
                 self.next_page();
-            } else if key::matches(k, &[self.key_map.prev_page.clone()]) {
+            } else if key::matches(k, std::slice::from_ref(&self.key_map.prev_page)) {
                 self.prev_page();
             }
         }
@@ -174,11 +174,7 @@ impl Model {
         // placeholders used by default are supported.
         let format = self.arabic_format.clone();
         if format == "%d/%d" {
-            format!(
-                "{}/{}",
-                self.page + 1,
-                self.total_pages
-            )
+            format!("{}/{}", self.page + 1, self.total_pages)
         } else {
             let s = format.replace("%d", &(self.page + 1).to_string());
             s.replace("%d", &self.total_pages.to_string())
