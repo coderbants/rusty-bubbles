@@ -424,10 +424,10 @@ impl Model {
     }
 
     fn bar_view(&self, b: &mut String, percent: f64, text_width: usize) {
-        let tw = 0usize.max(self.width.saturating_sub(text_width)); // total width
+        let tw = self.width.saturating_sub(text_width); // total width
         let mut fw = ((tw as f64) * percent).round() as usize; // filled width
 
-        fw = fw.max(0).min(tw);
+        fw = fw.min(tw);
 
         let is_half_block = self.full == DEFAULT_FULL_CHAR_HALF_BLOCK;
 
@@ -487,7 +487,7 @@ impl Model {
         }
 
         // Empty fill.
-        let n = 0usize.max(tw - fw);
+        let n = tw - fw;
         let repeat = self.empty.to_string().repeat(n);
         b.push_str(
             &Style::new()

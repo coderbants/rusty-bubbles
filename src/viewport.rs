@@ -668,7 +668,7 @@ impl Model {
     /// the default viewport keymapping. If set to 0 or less, horizontal
     /// scrolling is disabled.
     pub fn set_horizontal_step(&mut self, n: usize) {
-        self.horizontal_step = 0usize.max(n);
+        self.horizontal_step = n;
     }
 
     /// XOffset returns the current X offset - the horizontal scroll
@@ -1043,7 +1043,7 @@ fn parse_matches(content: &str, matches: &[Vec<usize>]) -> Vec<HighlightInfo> {
             // if it ends with a new line, add the range, increase line, and
             // continue
             if c == '\n' {
-                let colstart = 0usize.max(grapheme_start.saturating_sub(previous_lines_offset));
+                let colstart = grapheme_start.saturating_sub(previous_lines_offset);
                 let colend = (grapheme_pos.saturating_sub(previous_lines_offset) + 1).max(colstart); // +1 its \n itself
 
                 if colend > colstart {
@@ -1061,7 +1061,7 @@ fn parse_matches(content: &str, matches: &[Vec<usize>]) -> Vec<HighlightInfo> {
 
         // we found it!, add highlight and continue
         if byte_pos == byte_end {
-            let colstart = 0usize.max(grapheme_start.saturating_sub(previous_lines_offset));
+            let colstart = grapheme_start.saturating_sub(previous_lines_offset);
             let colend = (grapheme_pos.saturating_sub(previous_lines_offset)).max(colstart);
 
             if colend > colstart {

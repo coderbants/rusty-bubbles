@@ -661,7 +661,7 @@ impl Model {
 
         // Obey the maximum line limit.
         if MAX_LINES > 0 && self.value.len() + lines.len() - 1 > MAX_LINES {
-            let allowed_height = 0usize.max(MAX_LINES - self.value.len() + 1);
+            let allowed_height = MAX_LINES - self.value.len() + 1;
             lines.truncate(allowed_height);
         }
 
@@ -1909,7 +1909,7 @@ impl Model {
         }
         let max_offset = total.saturating_sub(h);
         if self.viewport.y_offset() > max_offset {
-            self.viewport.set_y_offset(0usize.max(max_offset));
+            self.viewport.set_y_offset(max_offset);
         }
         self.set_height(h);
     }

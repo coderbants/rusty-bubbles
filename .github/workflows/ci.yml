@@ -66,11 +66,29 @@ jobs:
           repository: coderbants/charming-bubbletea
           path: siblings/charming-bubbletea
           ref: dev
+      - name: Fetch sibling charming-colorprofile (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: coderbants/charming-colorprofile
+          path: siblings/charming-colorprofile
+          ref: dev
       - name: Fetch sibling charming-lipgloss (pinned)
         uses: actions/checkout@v4
         with:
           repository: coderbants/charming-lipgloss
           path: siblings/charming-lipgloss
+          ref: dev
+      - name: Fetch sibling charming-testkit (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: coderbants/charming-testkit
+          path: siblings/charming-testkit
+          ref: dev
+      - name: Fetch sibling charming-ultraviolet (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: coderbants/charming-ultraviolet
+          path: siblings/charming-ultraviolet
           ref: dev
       - name: Fetch sibling charming-x-ansi (pinned)
         uses: actions/checkout@v4
@@ -82,7 +100,10 @@ jobs:
         run: |
           mkdir -p ../siblings && true
           mv siblings/charming-bubbletea ../charming-bubbletea
+          mv siblings/charming-colorprofile ../charming-colorprofile
           mv siblings/charming-lipgloss ../charming-lipgloss
+          mv siblings/charming-testkit ../charming-testkit
+          mv siblings/charming-ultraviolet ../charming-ultraviolet
           mv siblings/charming-x-ansi ../charming-x-ansi
       - name: Format
         run: cargo fmt --all --check

@@ -778,7 +778,7 @@ impl Model {
         let style_text = styles.text.clone().inline(true);
 
         let value = &self.value[self.offset..self.offset_right];
-        let pos = self.pos.max(0) - self.offset;
+        let pos = self.pos - self.offset;
         let mut v =
             style_text.render(&self.echo_transform(&String::from_iter(value[..pos].iter())));
 
@@ -815,7 +815,7 @@ impl Model {
         // with the background color.
         let val_width = string_width(&String::from_iter(value.iter()));
         if self.width() > 0 && val_width <= self.width() {
-            let mut padding = self.width().max(0) - val_width;
+            let mut padding = self.width() - val_width;
             if val_width + padding <= self.width() && pos < value.len() {
                 padding += 1;
             }

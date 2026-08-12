@@ -664,7 +664,7 @@ impl Model {
             return;
         }
 
-        self.cursor = 0usize.max(max_cursor_index);
+        self.cursor = max_cursor_index;
 
         // if infinite scrolling is enabled, go to the first item.
         if self.infinite_scrolling {
@@ -680,7 +680,7 @@ impl Model {
 
     /// GoToEnd moves to the last page, and last item on the last page.
     pub fn go_to_end(&mut self) {
-        self.paginator.page = 0usize.max(self.paginator.total_pages - 1);
+        self.paginator.page = self.paginator.total_pages - 1;
         self.cursor = self.max_cursor_index();
     }
 
@@ -697,11 +697,9 @@ impl Model {
     }
 
     fn max_cursor_index(&self) -> usize {
-        0usize.max(
-            self.paginator
-                .items_on_page(self.visible_items().len())
-                .saturating_sub(1),
-        )
+        self.paginator
+            .items_on_page(self.visible_items().len())
+            .saturating_sub(1)
     }
 
     /// FilterState returns the current filter state.
@@ -937,7 +935,7 @@ impl Model {
 
         // Make sure the page stays in bounds
         if self.paginator.page >= self.paginator.total_pages - 1 {
-            self.paginator.page = 0usize.max(self.paginator.total_pages - 1);
+            self.paginator.page = self.paginator.total_pages - 1;
         }
     }
 
@@ -1469,7 +1467,6 @@ fn insert_item_into_slice(
         return items;
     }
 
-    let index = 0usize.max(index);
     let mut items: Vec<Box<dyn Item + Send + Sync>> = items.iter().map(|i| i.box_clone()).collect();
     items.insert(index, item);
     items
