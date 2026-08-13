@@ -39,73 +39,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
-name = "charming-bubbles"
-version = "2.1.2"
-dependencies = [
- "charming-bubbletea",
- "charming-lipgloss",
- "charming-x-ansi",
- "regex",
- "sha2",
- "unicode-width 0.2.2",
-]
-
-[[package]]
-name = "charming-bubbletea"
-version = "2.0.10"
-dependencies = [
- "charming-colorprofile",
- "charming-lipgloss",
- "charming-ultraviolet",
- "charming-x-ansi",
- "crossterm",
- "futures",
- "libc",
- "tokio",
- "tokio-stream",
- "unicode-segmentation",
-]
-
-[[package]]
-name = "charming-colorprofile"
-version = "0.4.5"
-dependencies = [
- "charming-x-ansi",
-]
-
-[[package]]
-name = "charming-lipgloss"
-version = "2.0.7"
-dependencies = [
- "charming-colorprofile",
- "charming-ultraviolet",
- "charming-x-ansi",
- "libc",
- "unicode-segmentation",
- "unicode-width 0.1.14",
-]
-
-[[package]]
-name = "charming-ultraviolet"
-version = "0.0.0-20260813000000"
-dependencies = [
- "charming-colorprofile",
- "charming-x-ansi",
- "libc",
- "unicode-segmentation",
- "unicode-width 0.1.14",
-]
-
-[[package]]
-name = "charming-x-ansi"
-version = "0.0.0-20260813000000"
-dependencies = [
- "libc",
- "unicode-segmentation",
- "unicode-width 0.1.14",
-]
-
-[[package]]
 name = "cpufeatures"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -401,6 +334,73 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
+
+[[package]]
+name = "rusty-bubbles"
+version = "2.1.0"
+dependencies = [
+ "regex",
+ "rusty-bubbletea",
+ "rusty-lipgloss",
+ "rusty-x-ansi",
+ "sha2",
+ "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "rusty-bubbletea"
+version = "2.0.8"
+dependencies = [
+ "crossterm",
+ "futures",
+ "libc",
+ "rusty-colorprofile",
+ "rusty-lipgloss",
+ "rusty-ultraviolet",
+ "rusty-x-ansi",
+ "tokio",
+ "tokio-stream",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "rusty-colorprofile"
+version = "0.4.3"
+dependencies = [
+ "rusty-x-ansi",
+]
+
+[[package]]
+name = "rusty-lipgloss"
+version = "2.0.5"
+dependencies = [
+ "libc",
+ "rusty-colorprofile",
+ "rusty-ultraviolet",
+ "rusty-x-ansi",
+ "unicode-segmentation",
+ "unicode-width 0.1.14",
+]
+
+[[package]]
+name = "rusty-ultraviolet"
+version = "0.0.0-20260703014108-f5a850f9c2b7"
+dependencies = [
+ "libc",
+ "rusty-colorprofile",
+ "rusty-x-ansi",
+ "unicode-segmentation",
+ "unicode-width 0.1.14",
+]
+
+[[package]]
+name = "rusty-x-ansi"
+version = "0.11.7"
+dependencies = [
+ "libc",
+ "unicode-segmentation",
+ "unicode-width 0.1.14",
+]
 
 [[package]]
 name = "scopeguard"

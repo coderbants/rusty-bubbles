@@ -12,12 +12,12 @@ use crate::cursor;
 use crate::internal::clipboard;
 use crate::internal::runeutil::{self, Sanitizer};
 use crate::key::{self, Binding};
-use charming_bubbletea::commands;
-use charming_bubbletea::cursor::CursorShape;
-use charming_bubbletea::key::{Key, KeyPressMsg};
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_bubbletea::paste::PasteMsg;
-use charming_lipgloss::{self, Color, Style};
+use rusty_bubbletea::commands;
+use rusty_bubbletea::cursor::CursorShape;
+use rusty_bubbletea::key::{Key, KeyPressMsg};
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_bubbletea::paste::PasteMsg;
+use rusty_lipgloss::{self, Color, Style};
 use std::time::Duration;
 use unicode_width::UnicodeWidthChar;
 
@@ -244,24 +244,24 @@ impl Model {
     /// Cursor returns a real cursor for rendering in a Bubble Tea program.
     /// This requires that [`use_virtual_cursor`](Self::use_virtual_cursor) is
     /// false.
-    pub fn cursor(&self) -> Option<charming_bubbletea::cursor::Cursor> {
+    pub fn cursor(&self) -> Option<rusty_bubbletea::cursor::Cursor> {
         if self.use_virtual_cursor || !self.focus {
             return None;
         }
 
-        let prompt_width = charming_lipgloss::size::width(&self.prompt_view());
+        let prompt_width = rusty_lipgloss::size::width(&self.prompt_view());
         let mut x_offset = self.pos + prompt_width;
         if self.width > 0 {
             x_offset = x_offset.min(self.width + prompt_width);
         }
 
         let style = &self.styles.cursor;
-        let mut c = charming_bubbletea::cursor::Cursor::new(x_offset, 0);
+        let mut c = rusty_bubbletea::cursor::Cursor::new(x_offset, 0);
         c.blink = style.blink;
         // The cursor color: upstream stores a color.Color; the bubbletea
         // Cursor expects an RGBColor — convert from the style color.
         let (r, g, b, _) = style.color.rgba_bytes();
-        c.color = Some(charming_x_ansi::color::RGBColor { r, g, b });
+        c.color = Some(rusty_x_ansi::color::RGBColor { r, g, b });
         c.shape = style.shape;
         Some(c)
     }
@@ -851,7 +851,7 @@ impl Model {
         // If Width is set then size placeholder accordingly.
         if self.width() > 0 {
             // available width is width - len + cursor offset of 1
-            let mut min_width = charming_lipgloss::size::width(&self.placeholder);
+            let mut min_width = rusty_lipgloss::size::width(&self.placeholder);
             let avail = (self.width() as i64) - (min_width as i64) + 1;
             let avail_width: usize;
 
@@ -1046,7 +1046,7 @@ fn string_width(s: &str) -> usize {
 /// DefaultStyles returns the default styles for focused and blurred states
 /// for the textarea.
 pub fn default_styles(is_dark: bool) -> Styles {
-    let light_dark = charming_lipgloss::color::light_dark(is_dark);
+    let light_dark = rusty_lipgloss::color::light_dark(is_dark);
 
     Styles {
         focused: StyleState {

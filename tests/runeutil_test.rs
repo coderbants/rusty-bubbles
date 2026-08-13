@@ -1,7 +1,7 @@
 //! Cleanroom Rust port of upstream Go source file: `internal/runeutil/runeutil_test.go`
 //! Upstream Target Tag / Version: `v2.1.0`
 
-use charming_bubbles::internal::runeutil::{self, Sanitizer};
+use rusty_bubbles::internal::runeutil::{self, Sanitizer};
 
 #[test]
 fn test_sanitize() {

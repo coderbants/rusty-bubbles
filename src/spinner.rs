@@ -7,9 +7,9 @@
 //! A spinner component for Bubble Tea applications.
 //! </public-docs>
 
-use charming_bubbletea::commands;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::Style;
+use rusty_bubbletea::commands;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::Style;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::{Duration, SystemTime};
 
@@ -299,7 +299,7 @@ pub struct TickMsg {
 /// Option is used to set options in [`new`]. For example:
 ///
 /// ```rust
-/// # use charming_bubbles::spinner;
+/// # use rusty_bubbles::spinner;
 /// let spinner = spinner::new(vec![spinner::with_spinner(spinner::dot())]);
 /// ```
 pub type Option = Box<dyn FnOnce(&mut Model)>;

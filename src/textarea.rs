@@ -16,11 +16,11 @@ use crate::internal::memoization;
 use crate::internal::runeutil::{self, Sanitizer};
 use crate::key::{self, Binding};
 use crate::viewport;
-use charming_bubbletea::cursor::CursorShape;
-use charming_bubbletea::key::KeyPressMsg;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_bubbletea::paste::PasteMsg;
-use charming_lipgloss::{self, Color, Style};
+use rusty_bubbletea::cursor::CursorShape;
+use rusty_bubbletea::key::KeyPressMsg;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_bubbletea::paste::PasteMsg;
+use rusty_lipgloss::{self, Color, Style};
 use std::fmt;
 use std::time::Duration;
 use unicode_width::UnicodeWidthChar;
@@ -470,7 +470,7 @@ pub fn new() -> Model {
         char_limit: DEFAULT_CHAR_LIMIT,
         max_height: DEFAULT_MAX_HEIGHT,
         max_width: DEFAULT_MAX_WIDTH,
-        prompt: format!("{} ", charming_lipgloss::border::thick_border().left),
+        prompt: format!("{} ", rusty_lipgloss::border::thick_border().left),
         styles,
         cache: memoization::new_memo_cache(MAX_LINES),
         end_of_buffer_character: ' ',
@@ -507,36 +507,36 @@ pub fn new() -> Model {
 /// DefaultStyles returns the default styles for focused and blurred states
 /// for the textarea.
 pub fn default_styles(is_dark: bool) -> Styles {
-    let light_dark = charming_lipgloss::color::light_dark(is_dark);
+    let light_dark = rusty_lipgloss::color::light_dark(is_dark);
 
     Styles {
         focused: StyleState {
-            base: charming_lipgloss::new_style(),
-            cursor_line: charming_lipgloss::new_style()
+            base: rusty_lipgloss::new_style(),
+            cursor_line: rusty_lipgloss::new_style()
                 .background_color(light_dark(Color::parse("255"), Color::parse("0"))),
-            cursor_line_number: charming_lipgloss::new_style()
+            cursor_line_number: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("240"), Color::parse("240"))),
-            end_of_buffer: charming_lipgloss::new_style()
+            end_of_buffer: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("254"), Color::parse("0"))),
-            line_number: charming_lipgloss::new_style()
+            line_number: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("249"), Color::parse("7"))),
-            placeholder: charming_lipgloss::new_style().foreground_color(Color::parse("240")),
-            prompt: charming_lipgloss::new_style().foreground_color(Color::parse("7")),
-            text: charming_lipgloss::new_style(),
+            placeholder: rusty_lipgloss::new_style().foreground_color(Color::parse("240")),
+            prompt: rusty_lipgloss::new_style().foreground_color(Color::parse("7")),
+            text: rusty_lipgloss::new_style(),
         },
         blurred: StyleState {
-            base: charming_lipgloss::new_style(),
-            cursor_line: charming_lipgloss::new_style()
+            base: rusty_lipgloss::new_style(),
+            cursor_line: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("245"), Color::parse("7"))),
-            cursor_line_number: charming_lipgloss::new_style()
+            cursor_line_number: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("249"), Color::parse("7"))),
-            end_of_buffer: charming_lipgloss::new_style()
+            end_of_buffer: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("254"), Color::parse("0"))),
-            line_number: charming_lipgloss::new_style()
+            line_number: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("249"), Color::parse("7"))),
-            placeholder: charming_lipgloss::new_style().foreground_color(Color::parse("240")),
-            prompt: charming_lipgloss::new_style().foreground_color(Color::parse("7")),
-            text: charming_lipgloss::new_style()
+            placeholder: rusty_lipgloss::new_style().foreground_color(Color::parse("240")),
+            prompt: rusty_lipgloss::new_style().foreground_color(Color::parse("7")),
+            text: rusty_lipgloss::new_style()
                 .foreground_color(light_dark(Color::parse("245"), Color::parse("7"))),
         },
         cursor: CursorStyle {
@@ -590,7 +590,7 @@ impl Model {
         }
 
         self.virtual_cursor.style =
-            charming_lipgloss::new_style().foreground_color(self.styles.cursor.color.clone());
+            rusty_lipgloss::new_style().foreground_color(self.styles.cursor.color.clone());
 
         // By default, the blink speed of the cursor is set to a default
         // internally.
@@ -1361,7 +1361,7 @@ impl Model {
     /// Cursor returns a real cursor for rendering in a Bubble Tea program.
     /// This requires that [`use_virtual_cursor`](Self::use_virtual_cursor) is
     /// false and the textarea is focused.
-    pub fn cursor(&self) -> Option<charming_bubbletea::cursor::Cursor> {
+    pub fn cursor(&self) -> Option<rusty_bubbletea::cursor::Cursor> {
         if self.use_virtual_cursor || !self.focus {
             return None;
         }
@@ -1384,12 +1384,12 @@ impl Model {
             + base_style.get_border_top_size();
 
         let style = &self.styles.cursor;
-        let mut c = charming_bubbletea::cursor::Cursor::new(x_offset, y_offset);
+        let mut c = rusty_bubbletea::cursor::Cursor::new(x_offset, y_offset);
         c.blink = style.blink;
         // The cursor color: upstream stores a color.Color; the bubbletea
         // Cursor expects an RGBColor — convert from the style color.
         let (r, g, b, _) = style.color.rgba_bytes();
-        c.color = Some(charming_x_ansi::color::RGBColor { r, g, b });
+        c.color = Some(rusty_x_ansi::color::RGBColor { r, g, b });
         c.shape = style.shape;
         Some(c)
     }
@@ -1588,7 +1588,7 @@ impl Model {
 
         self.reposition_view();
 
-        charming_bubbletea::commands::batch(cmds)
+        rusty_bubbletea::commands::batch(cmds)
     }
 
     fn view_inner(&self) -> String {
@@ -1730,7 +1730,7 @@ impl Model {
                 line_number: display_line,
                 focused: self.focus,
             });
-            let width = charming_lipgloss::size::width(&prompt);
+            let width = rusty_lipgloss::size::width(&prompt);
             if width < self.prompt_width {
                 prompt = format!("{}{}", " ".repeat(self.prompt_width - width), prompt);
             }
@@ -1831,7 +1831,7 @@ impl Model {
                     // extend the first line with spaces to fill the width
                     let gap = " ".repeat(
                         self.width
-                            .saturating_sub(charming_lipgloss::size::width(&plines[0])),
+                            .saturating_sub(rusty_lipgloss::size::width(&plines[0])),
                     );
                     s += &line_style.render(&gap);
                 }

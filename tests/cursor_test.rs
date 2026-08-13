@@ -7,7 +7,7 @@
 //! the race cannot occur; the test is preserved as a concurrency smoke
 //! test.
 
-use charming_bubbles::cursor;
+use rusty_bubbles::cursor;
 use std::sync::{Arc, Mutex};
 
 #[test]

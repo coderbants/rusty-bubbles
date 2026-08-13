@@ -8,9 +8,9 @@
 
 mod common;
 
-use charming_bubbles::viewport::{self, GutterContext, HighlightInfo};
-use charming_lipgloss::border::Border;
-use charming_x_ansi::util;
+use rusty_bubbles::viewport::{self, GutterContext, HighlightInfo};
+use rusty_lipgloss::border::Border;
+use rusty_x_ansi::util;
 use std::collections::HashMap;
 
 const TEXT_CONTENT_LIST: &str = "57 Precepts of narcissistic comedy character Zote from an awesome \"Hollow knight\" game (https://store.steampowered.com/app/367520/Hollow_Knight/).
@@ -305,7 +305,7 @@ fn test_visible_lines() {
         lines.len()
     );
     let last_item_idx = number_of_lines - 1;
-    let cut: String = charming_x_ansi::cut(&init_list[last_item_idx], 0, 20);
+    let cut: String = rusty_x_ansi::cut(&init_list[last_item_idx], 0, 20);
     assert_eq!(
         lines[last_item_idx].trim_end(),
         cut,
@@ -316,7 +316,7 @@ fn test_visible_lines() {
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
     for (i, line) in lines.iter().enumerate() {
-        let cut: String = charming_x_ansi::cut(&init_list[i], 5, 25);
+        let cut: String = rusty_x_ansi::cut(&init_list[i], 5, 25);
         assert_eq!(line.trim_end(), cut, "line must be `{cut}`, get `{line}`");
     }
 
@@ -324,7 +324,7 @@ fn test_visible_lines() {
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
     for (i, line) in lines.iter().enumerate() {
-        let cut: String = charming_x_ansi::cut(&init_list[i], 0, 20);
+        let cut: String = rusty_x_ansi::cut(&init_list[i], 0, 20);
         assert_eq!(line.trim_end(), cut, "line must be `{cut}`, get `{line}`");
     }
 
@@ -334,7 +334,7 @@ fn test_visible_lines() {
     let view = m.view();
     let lines: Vec<&str> = view.split('\n').collect();
     for (i, line) in lines.iter().enumerate() {
-        let cut: String = charming_x_ansi::cut(&init_list[i], 0, 20);
+        let cut: String = rusty_x_ansi::cut(&init_list[i], 0, 20);
         assert_eq!(line.trim_end(), cut, "line must be `{cut}`, get `{line}`");
     }
 }
@@ -530,8 +530,8 @@ fn test_sizing() {
     let view = vt.view();
     assert_eq!(
         (
-            charming_lipgloss::size::width(&view),
-            charming_lipgloss::size::height(&view)
+            rusty_lipgloss::size::width(&view),
+            rusty_lipgloss::size::height(&view)
         ),
         (width, height),
         "view size should be {width} x {height}"
@@ -550,8 +550,8 @@ fn test_sizing() {
     let view = vt.view();
     assert_eq!(
         (
-            charming_lipgloss::size::width(&view),
-            charming_lipgloss::size::height(&view)
+            rusty_lipgloss::size::width(&view),
+            rusty_lipgloss::size::height(&view)
         ),
         (width, height),
         "view size should be {width} x {height}"
@@ -587,8 +587,8 @@ fn test_sizing() {
     vt.set_content(TEXT_CONTENT_LIST);
     assert_eq!(
         (
-            charming_lipgloss::size::width(&vt.view()),
-            charming_lipgloss::size::height(&vt.view())
+            rusty_lipgloss::size::width(&vt.view()),
+            rusty_lipgloss::size::height(&vt.view())
         ),
         (width, height),
         "view size should be {width} x {height}"
@@ -600,8 +600,8 @@ fn test_sizing() {
     vt.scroll_down(1);
     assert_eq!(
         (
-            charming_lipgloss::size::width(&vt.view()),
-            charming_lipgloss::size::height(&vt.view())
+            rusty_lipgloss::size::width(&vt.view()),
+            rusty_lipgloss::size::height(&vt.view())
         ),
         (width, height),
         "view size should be {width} x {height}"
@@ -633,8 +633,8 @@ fn test_sizing() {
     let view = vt.view();
     assert_eq!(
         (
-            charming_lipgloss::size::width(&view),
-            charming_lipgloss::size::height(&view)
+            rusty_lipgloss::size::width(&view),
+            rusty_lipgloss::size::height(&view)
         ),
         (width, height),
         "view size should be {width} x {height}"

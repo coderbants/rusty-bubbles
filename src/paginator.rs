@@ -10,8 +10,8 @@
 //! </public-docs>
 
 use crate::key::{self, Binding};
-use charming_bubbletea::key::{Key, KeyPressMsg};
-use charming_bubbletea::model::{Cmd, Msg};
+use rusty_bubbletea::key::{Key, KeyPressMsg};
+use rusty_bubbletea::model::{Cmd, Msg};
 
 /// Type specifies the way we render pagination.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -96,7 +96,7 @@ impl Model {
     /// end bounds corresponding to the pagination. For example:
     ///
     /// ```rust
-    /// # use charming_bubbles::paginator;
+    /// # use rusty_bubbles::paginator;
     /// # let mut model = paginator::new(vec![]);
     /// # model.per_page = 2;
     /// let bunch_of_stuff = vec![1, 2, 3, 4, 5];

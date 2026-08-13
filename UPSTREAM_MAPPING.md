@@ -1,4 +1,4 @@
-# Upstream Mapping: `charming-bubbles` (cleanroom Rust port of `charm.land/bubbles/v2`)
+# Upstream Mapping: `rusty-bubbles` (cleanroom Rust port of `charm.land/bubbles/v2`)
 
 **Upstream target:** `charm.land/bubbles/v2` **v2.1.0** (tag `v2.1.0`)
 **Upstream source:** checked out in `upstream-go/` (git-ignored).
@@ -101,9 +101,9 @@ dependency tree as upstream keeps them out of the bubbletea library module):
 
 | Upstream Go Module | Rust Crate | Notes |
 | :--- | :--- | :--- |
-| `charm.land/bubbletea/v2` | `charming-bubbletea` (path) | v2.0.8 port |
-| `charm.land/lipgloss/v2` | `charming-lipgloss` (path) | v2.0.5 port |
-| `github.com/charmbracelet/x/ansi` | `charming-x-ansi` (path) | width/cut/truncate |
+| `charm.land/bubbletea/v2` | `rusty-bubbletea` (path) | v2.0.8 port |
+| `charm.land/lipgloss/v2` | `rusty-lipgloss` (path) | v2.0.5 port |
+| `github.com/charmbracelet/x/ansi` | `rusty-x-ansi` (path) | width/cut/truncate |
 | `github.com/mattn/go-runewidth` + `rivo/uniseg` | `unicode-width` | Rune widths |
 | `golang.org/x/crypto/sha256` | `sha2` | Memoization hashing |
 

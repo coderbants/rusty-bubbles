@@ -9,7 +9,7 @@
 //! keymapping with this package. Here's one example:
 //!
 //! ```rust
-//! use charming_bubbles::key;
+//! use rusty_bubbles::key;
 //!
 //! struct KeyMap {
 //!     up: key::Binding,

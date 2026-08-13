@@ -7,10 +7,10 @@
 
 mod common;
 
-use charming_bubbles::key;
-use charming_bubbles::table;
-use charming_lipgloss::{self, border::normal_border};
-use charming_x_ansi::util;
+use rusty_bubbles::key;
+use rusty_bubbles::table;
+use rusty_lipgloss::{self, border::normal_border};
+use rusty_x_ansi::util;
 
 /// Port of the upstream package-level `testCols` fixture.
 fn test_cols() -> Vec<table::Column> {
@@ -90,9 +90,9 @@ fn biscuits(width: usize, height: usize, styles: Option<table::Styles>) -> table
 /// equivalent for `Styles{}` fields).
 fn plain_styles() -> table::Styles {
     table::Styles {
-        header: charming_lipgloss::new_style(),
-        cell: charming_lipgloss::new_style(),
-        selected: charming_lipgloss::new_style(),
+        header: rusty_lipgloss::new_style(),
+        cell: rusty_lipgloss::new_style(),
+        selected: rusty_lipgloss::new_style(),
     }
 }
 
@@ -358,7 +358,7 @@ fn test_table_alignment_no_border() {
 /// Port of `TestTableAlignment` / "With border".
 #[test]
 fn test_table_alignment_with_border() {
-    let base_style = charming_lipgloss::new_style()
+    let base_style = rusty_lipgloss::new_style()
         .border_style(normal_border())
         .border_foreground(&["240"]);
 
@@ -517,8 +517,8 @@ fn test_model_view_multiple_rows_and_columns() {
 #[test]
 fn test_model_view_extra_padding() {
     let mut s = table::default_styles();
-    s.header = charming_lipgloss::new_style().padding(&[2, 2]);
-    s.cell = charming_lipgloss::new_style().padding(&[2, 2]);
+    s.header = rusty_lipgloss::new_style().padding(&[2, 2]);
+    s.cell = rusty_lipgloss::new_style().padding(&[2, 2]);
 
     let m = biscuits(60, 10, Some(s));
     let got = ansi_strip(&m.view());
@@ -529,8 +529,8 @@ fn test_model_view_extra_padding() {
 #[test]
 fn test_model_view_no_padding() {
     let mut s = table::default_styles();
-    s.header = charming_lipgloss::new_style();
-    s.cell = charming_lipgloss::new_style();
+    s.header = rusty_lipgloss::new_style();
+    s.cell = rusty_lipgloss::new_style();
 
     let m = biscuits(53, 10, Some(s));
     let got = ansi_strip(&m.view());
@@ -541,9 +541,9 @@ fn test_model_view_no_padding() {
 #[test]
 fn test_model_view_bordered_headers() {
     let styles = table::Styles {
-        header: charming_lipgloss::new_style().border_style(normal_border()),
-        cell: charming_lipgloss::new_style(),
-        selected: charming_lipgloss::new_style(),
+        header: rusty_lipgloss::new_style().border_style(normal_border()),
+        cell: rusty_lipgloss::new_style(),
+        selected: rusty_lipgloss::new_style(),
     };
 
     let m = biscuits(59, 23, Some(styles));
@@ -555,9 +555,9 @@ fn test_model_view_bordered_headers() {
 #[test]
 fn test_model_view_bordered_cells() {
     let styles = table::Styles {
-        header: charming_lipgloss::new_style(),
-        cell: charming_lipgloss::new_style().border_style(normal_border()),
-        selected: charming_lipgloss::new_style(),
+        header: rusty_lipgloss::new_style(),
+        cell: rusty_lipgloss::new_style().border_style(normal_border()),
+        selected: rusty_lipgloss::new_style(),
     };
 
     let m = biscuits(59, 21, Some(styles));
@@ -617,9 +617,9 @@ fn test_model_view_modified_viewport_height() {
 #[ignore]
 #[test]
 fn test_model_view_centered_in_a_box() {
-    let box_style = charming_lipgloss::new_style()
+    let box_style = rusty_lipgloss::new_style()
         .border_style(normal_border())
-        .align(&[charming_lipgloss::CENTER]);
+        .align(&[rusty_lipgloss::CENTER]);
 
     let m = biscuits(80, 6, None);
     let table_view = ansi_strip(&m.view());

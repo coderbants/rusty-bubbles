@@ -6,7 +6,7 @@
 //! and access-order tracking, plus a deterministic replay of the upstream
 //! fuzz seeds.
 
-use charming_bubbles::internal::memoization::{self, HInt, HString};
+use rusty_bubbles::internal::memoization::{self, HInt, HString};
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq)]

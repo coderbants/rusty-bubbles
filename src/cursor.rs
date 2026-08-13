@@ -7,8 +7,8 @@
 //! A virtual cursor to support the textinput and textarea elements.
 //! </public-docs>
 
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::Style;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::Style;
 use std::fmt;
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::Arc;
@@ -138,7 +138,7 @@ impl Model {
 
         if msg
             .as_any()
-            .downcast_ref::<charming_bubbletea::focus::FocusMsg>()
+            .downcast_ref::<rusty_bubbletea::focus::FocusMsg>()
             .is_some()
         {
             return self.focus();
@@ -146,7 +146,7 @@ impl Model {
 
         if msg
             .as_any()
-            .downcast_ref::<charming_bubbletea::focus::BlurMsg>()
+            .downcast_ref::<rusty_bubbletea::focus::BlurMsg>()
             .is_some()
         {
             self.blur();

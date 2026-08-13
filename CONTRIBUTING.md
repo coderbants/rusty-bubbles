@@ -1,6 +1,6 @@
-# Contributing to `charming-bubbles`
+# Contributing to `rusty-bubbles`
 
-Thanks for your interest in contributing! `charming-bubbles` is a cleanroom Rust port of
+Thanks for your interest in contributing! `rusty-bubbles` is a cleanroom Rust port of
 the upstream Go [charmbracelet/bubbles](https://github.com/charmbracelet/bubbles) library
 of UI components for Bubble Tea, pinned to upstream tag `v2.1.0`.
 
@@ -60,7 +60,7 @@ cargo test --all-targets
    ```
 
    Interactive component behavior (key handling, rendering) is exercised with the pty
-   driver from a sibling repo (`charming-bubbletea/scripts/pty_driver.py`) against
+   driver from a sibling repo (`rusty-bubbletea/scripts/pty_driver.py`) against
    `target/debug/examples/<name>`.
 
 ## Releases

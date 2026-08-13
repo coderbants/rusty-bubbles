@@ -20,11 +20,11 @@ use crate::key::{self, Binding};
 use crate::paginator;
 use crate::spinner;
 use crate::textinput;
-use charming_bubbletea::commands;
-use charming_bubbletea::key::KeyPressMsg;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::{self, Color, Style};
-use charming_x_ansi;
+use rusty_bubbletea::commands;
+use rusty_bubbletea::key::KeyPressMsg;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::{self, Color, Style};
+use rusty_x_ansi;
 use std::time::Duration;
 
 /// The update callback type for [DefaultDelegate] items (upstream
@@ -799,7 +799,7 @@ impl Model {
 
     /// SetSize sets the width and height of this component.
     pub fn set_size(&mut self, width: usize, height: usize) {
-        let prompt_width = charming_lipgloss::size::width(
+        let prompt_width = rusty_lipgloss::size::width(
             &self.styles.title.clone().render(&self.filter_input.prompt),
         );
 
@@ -807,7 +807,7 @@ impl Model {
         self.height = height;
         self.help.set_width(width);
         let sw = self.spinner_view();
-        let sw_width = charming_lipgloss::size::width(&sw);
+        let sw_width = rusty_lipgloss::size::width(&sw);
         self.filter_input
             .set_width(width.saturating_sub(prompt_width + sw_width));
         self.update_pagination();
@@ -902,19 +902,19 @@ impl Model {
 
         if self.show_title || (self.show_filter && self.filtering_enabled) {
             avail_height =
-                avail_height.saturating_sub(charming_lipgloss::size::height(&self.title_view()));
+                avail_height.saturating_sub(rusty_lipgloss::size::height(&self.title_view()));
         }
         if self.show_status_bar {
             avail_height =
-                avail_height.saturating_sub(charming_lipgloss::size::height(&self.status_view()));
+                avail_height.saturating_sub(rusty_lipgloss::size::height(&self.status_view()));
         }
         if self.show_pagination {
             avail_height = avail_height
-                .saturating_sub(charming_lipgloss::size::height(&self.pagination_view()));
+                .saturating_sub(rusty_lipgloss::size::height(&self.pagination_view()));
         }
         if self.show_help {
             avail_height =
-                avail_height.saturating_sub(charming_lipgloss::size::height(&self.help_view()));
+                avail_height.saturating_sub(rusty_lipgloss::size::height(&self.help_view()));
         }
 
         let delegate_height = self.delegate.height();
@@ -1184,29 +1184,29 @@ impl Model {
         if self.show_title || (self.show_filter && self.filtering_enabled) {
             let v = self.title_view();
             sections.push(v.clone());
-            avail_height = avail_height.saturating_sub(charming_lipgloss::size::height(&v));
+            avail_height = avail_height.saturating_sub(rusty_lipgloss::size::height(&v));
         }
 
         if self.show_status_bar {
             let v = self.status_view();
             sections.push(v.clone());
-            avail_height = avail_height.saturating_sub(charming_lipgloss::size::height(&v));
+            avail_height = avail_height.saturating_sub(rusty_lipgloss::size::height(&v));
         }
 
         let mut pagination = String::new();
         if self.show_pagination {
             pagination = self.pagination_view();
             avail_height =
-                avail_height.saturating_sub(charming_lipgloss::size::height(&pagination));
+                avail_height.saturating_sub(rusty_lipgloss::size::height(&pagination));
         }
 
         let mut help_view = String::new();
         if self.show_help {
             help_view = self.help_view();
-            avail_height = avail_height.saturating_sub(charming_lipgloss::size::height(&help_view));
+            avail_height = avail_height.saturating_sub(rusty_lipgloss::size::height(&help_view));
         }
 
-        let content = charming_lipgloss::new_style()
+        let content = rusty_lipgloss::new_style()
             .height(avail_height)
             .render(&self.populated_view());
         sections.push(content);
@@ -1220,7 +1220,7 @@ impl Model {
         }
 
         let refs: Vec<&str> = sections.iter().map(|s| s.as_str()).collect();
-        charming_lipgloss::join::join_vertical(charming_lipgloss::LEFT, &refs)
+        rusty_lipgloss::join::join_vertical(rusty_lipgloss::LEFT, &refs)
     }
 
     fn title_view(&self) -> String {
@@ -1229,10 +1229,10 @@ impl Model {
         // We need to account for the size of the spinner, even if we don't
         // render it, to reserve some space for it should we turn it on later.
         let spinner_view = self.spinner_view();
-        let spinner_width = charming_lipgloss::size::width(&spinner_view);
+        let spinner_width = rusty_lipgloss::size::width(&spinner_view);
         let spinner_left_gap = " ";
         let spinner_on_left = title_bar_style.get_padding_left()
-            >= spinner_width + charming_lipgloss::size::width(spinner_left_gap)
+            >= spinner_width + rusty_lipgloss::size::width(spinner_left_gap)
             && self.show_spinner;
 
         let mut view = String::new();
@@ -1255,7 +1255,7 @@ impl Model {
             if self.filter_state != FilterState::Filtering {
                 view += "  ";
                 view += &self.status_message;
-                view = charming_x_ansi::truncate(
+                view = rusty_x_ansi::truncate(
                     &view,
                     self.width.saturating_sub(spinner_width),
                     ELLIPSIS,
@@ -1267,7 +1267,7 @@ impl Model {
         if self.show_spinner && !spinner_on_left {
             // Place spinner on the right
             let avail_space =
-                self.width - charming_lipgloss::size::width(&title_bar_style.render(&view));
+                self.width - rusty_lipgloss::size::width(&title_bar_style.render(&view));
             if avail_space > spinner_width {
                 view += &" ".repeat(avail_space - spinner_width);
                 view += &spinner_view;
@@ -1314,7 +1314,7 @@ impl Model {
 
             if filtered {
                 let f = self.filter_input.value().trim().to_string();
-                let f = charming_x_ansi::truncate(&f, 10, "…");
+                let f = rusty_x_ansi::truncate(&f, 10, "…");
                 status += &format!("“{}” ", f);
             }
 
@@ -1343,7 +1343,7 @@ impl Model {
 
         // If the dot pagination is wider than the width of the window use
         // the arabic paginator.
-        if charming_x_ansi::string_width(&s) > self.width {
+        if rusty_x_ansi::string_width(&s) > self.width {
             self.paginator_type_change_to_arabic();
             s = self
                 .styles
@@ -1643,16 +1643,16 @@ pub struct DefaultItemStyles {
 /// NewDefaultItemStyles returns style definitions for a default item. See
 /// `DefaultItemView` for when these come into play.
 pub fn new_default_item_styles(is_dark: bool) -> DefaultItemStyles {
-    let light_dark = charming_lipgloss::color::light_dark(is_dark);
+    let light_dark = rusty_lipgloss::color::light_dark(is_dark);
 
     let mut s = DefaultItemStyles {
-        normal_title: charming_lipgloss::new_style()
+        normal_title: rusty_lipgloss::new_style()
             .foreground_color(light_dark(Color::parse("#1a1a1a"), Color::parse("#dddddd")))
             .padding(&[0, 0, 0, 2]),
-        normal_desc: charming_lipgloss::new_style(),
-        selected_title: charming_lipgloss::new_style()
+        normal_desc: rusty_lipgloss::new_style(),
+        selected_title: rusty_lipgloss::new_style()
             .border(
-                charming_lipgloss::Border::normal(),
+                rusty_lipgloss::Border::normal(),
                 &[false, false, false, true],
             )
             .border_foreground(&[
@@ -1660,12 +1660,12 @@ pub fn new_default_item_styles(is_dark: bool) -> DefaultItemStyles {
             ])
             .foreground_color(light_dark(Color::parse("#EE6FF8"), Color::parse("#EE6FF8")))
             .padding(&[0, 0, 0, 1]),
-        selected_desc: charming_lipgloss::new_style(),
-        dimmed_title: charming_lipgloss::new_style()
+        selected_desc: rusty_lipgloss::new_style(),
+        dimmed_title: rusty_lipgloss::new_style()
             .foreground_color(light_dark(Color::parse("#A49FA5"), Color::parse("#777777")))
             .padding(&[0, 0, 0, 2]),
-        dimmed_desc: charming_lipgloss::new_style(),
-        filter_match: charming_lipgloss::new_style().underline(true),
+        dimmed_desc: rusty_lipgloss::new_style(),
+        filter_match: rusty_lipgloss::new_style().underline(true),
     };
     s.normal_desc = s
         .normal_title
@@ -1786,14 +1786,14 @@ impl DefaultDelegate {
         // Prevent text from exceeding list width
         let textwidth =
             m.width - s.normal_title.get_padding_left() - s.normal_title.get_padding_right();
-        title = charming_x_ansi::truncate(&title, textwidth, ELLIPSIS);
+        title = rusty_x_ansi::truncate(&title, textwidth, ELLIPSIS);
         if self.show_description {
             let mut lines: Vec<String> = vec![];
             for (i, line) in desc.split('\n').enumerate() {
                 if i >= self.height - 1 {
                     break;
                 }
-                lines.push(charming_x_ansi::truncate(line, textwidth, ELLIPSIS));
+                lines.push(rusty_x_ansi::truncate(line, textwidth, ELLIPSIS));
             }
             desc = lines.join("\n");
         }
@@ -1819,7 +1819,7 @@ impl DefaultDelegate {
                 // Highlight matches
                 let unmatched = s.selected_title.clone().inline(true);
                 let matched = unmatched.clone().inherit(&s.filter_match);
-                title = charming_lipgloss::runes::style_runes(
+                title = rusty_lipgloss::runes::style_runes(
                     &title,
                     &matched_rumes,
                     &matched,
@@ -1833,7 +1833,7 @@ impl DefaultDelegate {
                 // Highlight matches
                 let unmatched = s.normal_title.clone().inline(true);
                 let matched = unmatched.clone().inherit(&s.filter_match);
-                title = charming_lipgloss::runes::style_runes(
+                title = rusty_lipgloss::runes::style_runes(
                     &title,
                     &matched_rumes,
                     &matched,
@@ -1934,60 +1934,60 @@ pub struct Styles {
 /// DefaultStyles returns a set of default style definitions for this list
 /// component.
 pub fn default_styles(is_dark: bool) -> Styles {
-    let light_dark = charming_lipgloss::color::light_dark(is_dark);
+    let light_dark = rusty_lipgloss::color::light_dark(is_dark);
 
     let very_subdued_color = light_dark(Color::parse("#DDDADA"), Color::parse("#3C3C3C"));
     let subdued_color = light_dark(Color::parse("#9B9B9B"), Color::parse("#5C5C5C"));
 
-    let title_bar = charming_lipgloss::new_style().padding(&[0, 0, 1, 2]);
+    let title_bar = rusty_lipgloss::new_style().padding(&[0, 0, 1, 2]);
 
-    let title = charming_lipgloss::new_style()
+    let title = rusty_lipgloss::new_style()
         .background_color(Color::parse("62"))
         .foreground_color(Color::parse("230"))
         .padding(&[0, 1]);
 
-    let spinner_style = charming_lipgloss::new_style()
+    let spinner_style = rusty_lipgloss::new_style()
         .foreground_color(light_dark(Color::parse("#8E8E8E"), Color::parse("#747373")));
 
-    let prompt = charming_lipgloss::new_style()
+    let prompt = rusty_lipgloss::new_style()
         .foreground_color(light_dark(Color::parse("#04B575"), Color::parse("#ECFD65")));
     let mut filter = textinput::default_styles(is_dark);
     filter.cursor.color = light_dark(Color::parse("#EE6FF8"), Color::parse("#EE6FF8"));
     filter.blurred.prompt = prompt.clone();
     filter.focused.prompt = prompt;
 
-    let default_filter_character_match = charming_lipgloss::new_style().underline(true);
+    let default_filter_character_match = rusty_lipgloss::new_style().underline(true);
 
-    let status_bar = charming_lipgloss::new_style()
+    let status_bar = rusty_lipgloss::new_style()
         .foreground_color(light_dark(Color::parse("#A49FA5"), Color::parse("#777777")))
         .padding(&[0, 0, 1, 2]);
 
-    let status_empty = charming_lipgloss::new_style().foreground_color(subdued_color.clone());
+    let status_empty = rusty_lipgloss::new_style().foreground_color(subdued_color.clone());
 
-    let status_bar_active_filter = charming_lipgloss::new_style()
+    let status_bar_active_filter = rusty_lipgloss::new_style()
         .foreground_color(light_dark(Color::parse("#1a1a1a"), Color::parse("#dddddd")));
 
     let status_bar_filter_count =
-        charming_lipgloss::new_style().foreground_color(very_subdued_color.clone());
+        rusty_lipgloss::new_style().foreground_color(very_subdued_color.clone());
 
-    let no_items = charming_lipgloss::new_style()
+    let no_items = rusty_lipgloss::new_style()
         .foreground_color(light_dark(Color::parse("#909090"), Color::parse("#626262")));
 
-    let arabic_pagination = charming_lipgloss::new_style().foreground_color(subdued_color);
+    let arabic_pagination = rusty_lipgloss::new_style().foreground_color(subdued_color);
 
-    let pagination_style = charming_lipgloss::new_style().padding_left(2);
+    let pagination_style = rusty_lipgloss::new_style().padding_left(2);
 
-    let help_style = charming_lipgloss::new_style().padding(&[1, 0, 0, 2]);
+    let help_style = rusty_lipgloss::new_style().padding(&[1, 0, 0, 2]);
 
-    let active_pagination_dot = charming_lipgloss::new_style()
+    let active_pagination_dot = rusty_lipgloss::new_style()
         .foreground_color(light_dark(Color::parse("#847A85"), Color::parse("#979797")))
         .set_string(&[BULLET]);
 
-    let inactive_pagination_dot = charming_lipgloss::new_style()
+    let inactive_pagination_dot = rusty_lipgloss::new_style()
         .foreground_color(very_subdued_color.clone())
         .set_string(&[BULLET]);
 
-    let divider_dot = charming_lipgloss::new_style()
+    let divider_dot = rusty_lipgloss::new_style()
         .foreground_color(very_subdued_color)
         .set_string(&[" • "]);
 

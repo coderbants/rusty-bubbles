@@ -1,7 +1,7 @@
 //! Cleanroom Rust port of upstream Go source file: `key/key_test.go`
 //! Upstream Target Tag / Version: `v2.1.0`
 
-use charming_bubbles::key::{self, Binding};
+use rusty_bubbles::key::{self, Binding};
 
 #[test]
 fn test_binding_enabled() {

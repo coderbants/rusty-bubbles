@@ -6,9 +6,9 @@
 
 mod common;
 
-use charming_bubbles::help;
-use charming_bubbles::key;
-use charming_x_ansi::util;
+use rusty_bubbles::help;
+use rusty_bubbles::key;
+use rusty_x_ansi::util;
 
 #[test]
 fn test_full_help() {

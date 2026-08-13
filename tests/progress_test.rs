@@ -6,11 +6,11 @@
 
 mod common;
 
-use charming_bubbles::progress;
-use charming_bubbles::progress::{
+use rusty_bubbles::progress;
+use rusty_bubbles::progress::{
     with_color_func, with_colors, with_fill_characters, with_scaled, without_percentage,
 };
-use charming_lipgloss::Color;
+use rusty_lipgloss::Color;
 
 #[test]
 fn test_blend() {

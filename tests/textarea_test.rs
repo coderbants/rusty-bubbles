@@ -18,10 +18,10 @@
 
 mod common;
 
-use charming_bubbles::textarea;
-use charming_bubbletea::key::{Key, KeyMod, KeyPressMsg};
-use charming_bubbletea::model::Msg;
-use charming_bubbletea::paste::PasteMsg;
+use rusty_bubbles::textarea;
+use rusty_bubbletea::key::{Key, KeyMod, KeyPressMsg};
+use rusty_bubbletea::model::Msg;
+use rusty_bubbletea::paste::PasteMsg;
 
 /// Port of the upstream `newTextArea()` helper.
 fn new_text_area() -> textarea::Model {
@@ -76,7 +76,7 @@ fn update_nil(m: &mut textarea::Model) {
 /// Port of the upstream `stripString(str)` helper: strip ANSI sequences,
 /// trim trailing whitespace per line and drop empty lines.
 fn strip_string(s: &str) -> String {
-    let s = charming_x_ansi::util::strip(s);
+    let s = rusty_x_ansi::util::strip(s);
     let mut lines = vec![];
     for l in s.split('\n') {
         let trimmed = l.trim_end();
@@ -134,7 +134,7 @@ fn test_vertical_scrolling() {
         // adaptation moves the cursor onto the checked line — unlike
         // upstream, where the cursor stays on the last line — so the view
         // is stripped before the substring check.)
-        let view = charming_x_ansi::util::strip(&m.view());
+        let view = rusty_x_ansi::util::strip(&m.view());
         assert!(
             view.contains(line),
             "Text area did not render the correct scrolled input:\n{view}"
@@ -323,7 +323,7 @@ fn test_vertical_navigation_keeps_cursor_horizontal_position() {
         line_info.column_offset
     );
 
-    m.update(&*key_code(charming_bubbletea::key::KEY_DOWN));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_DOWN));
 
     let line_info = m.line_info();
     assert!(
@@ -365,7 +365,7 @@ fn test_vertical_navigation_should_remember_position_while_traversing() {
     );
 
     // Let's go up.
-    m.update(&*key_code(charming_bubbletea::key::KEY_UP));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_UP));
 
     // We should be at the end of the second line.
     let (row, col) = m.cursor_position();
@@ -375,7 +375,7 @@ fn test_vertical_navigation_should_remember_position_while_traversing() {
     );
 
     // And, again.
-    m.update(&*key_code(charming_bubbletea::key::KEY_UP));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_UP));
 
     // We should be at the end of the first line.
     let (row, col) = m.cursor_position();
@@ -385,8 +385,8 @@ fn test_vertical_navigation_should_remember_position_while_traversing() {
     );
 
     // Let's go down, twice.
-    m.update(&*key_code(charming_bubbletea::key::KEY_DOWN));
-    m.update(&*key_code(charming_bubbletea::key::KEY_DOWN));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_DOWN));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_DOWN));
 
     // We should be at the end of the last line.
     let (row, col) = m.cursor_position();
@@ -400,8 +400,8 @@ fn test_vertical_navigation_should_remember_position_while_traversing() {
     // user wants to keep the cursor where it is horizontally. This is how
     // most text areas work.
 
-    m.update(&*key_code(charming_bubbletea::key::KEY_UP));
-    m.update(&*key_code(charming_bubbletea::key::KEY_LEFT));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_UP));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_LEFT));
 
     let (row, col) = m.cursor_position();
     assert!(
@@ -411,7 +411,7 @@ fn test_vertical_navigation_should_remember_position_while_traversing() {
 
     // Going down now should keep us at the 4th column since we moved left
     // and reset the horizontal position saved state.
-    m.update(&*key_code(charming_bubbletea::key::KEY_DOWN));
+    m.update(&*key_code(rusty_bubbletea::key::KEY_DOWN));
     let (row, col) = m.cursor_position();
     assert!(
         col == 4 && row == 2,
@@ -449,17 +449,17 @@ fn test_word() {
         // "navigate"
         let keys: Vec<Box<dyn Msg>> = vec![
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_LEFT,
+                rusty_bubbletea::key::KEY_LEFT,
                 "alt+left",
                 KeyMod::ALT,
             ))),
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_LEFT,
+                rusty_bubbletea::key::KEY_LEFT,
                 "alt+left",
                 KeyMod::ALT,
             ))),
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_RIGHT,
+                rusty_bubbletea::key::KEY_RIGHT,
                 "right",
                 KeyMod::default(),
             ))),
@@ -481,22 +481,22 @@ fn test_word() {
         // "delete"
         let keys: Vec<Box<dyn Msg>> = vec![
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_END,
+                rusty_bubbletea::key::KEY_END,
                 "end",
                 KeyMod::default(),
             ))),
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_BACKSPACE,
+                rusty_bubbletea::key::KEY_BACKSPACE,
                 "alt+backspace",
                 KeyMod::ALT,
             ))),
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_BACKSPACE,
+                rusty_bubbletea::key::KEY_BACKSPACE,
                 "alt+backspace",
                 KeyMod::ALT,
             ))),
             Box::new(KeyPressMsg(Key::new(
-                charming_bubbletea::key::KEY_BACKSPACE,
+                rusty_bubbletea::key::KEY_BACKSPACE,
                 "backspace",
                 KeyMod::default(),
             ))),
@@ -545,7 +545,7 @@ fn test_dynamic_height_grows_on_newline() {
         ta.height()
     );
 
-    ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+    ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     assert_eq!(
         ta.height(),
         2,
@@ -553,7 +553,7 @@ fn test_dynamic_height_grows_on_newline() {
         ta.height()
     );
 
-    ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+    ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     assert_eq!(
         ta.height(),
         3,
@@ -583,9 +583,9 @@ fn test_dynamic_height_shrinks_on_line_deletion() {
     let mut ta = new_dynamic_text_area(1, 20);
 
     ta.update(&*key_press('a'));
-    ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+    ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     ta.update(&*key_press('b'));
-    ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+    ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     ta.update(&*key_press('c'));
 
     assert_eq!(
@@ -597,7 +597,7 @@ fn test_dynamic_height_shrinks_on_line_deletion() {
 
     // Backspace at start of line 3 merges with line 2
     ta.cursor_start();
-    ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE));
+    ta.update(&*key_code(rusty_bubbletea::key::KEY_BACKSPACE));
 
     assert_eq!(
         ta.height(),
@@ -622,7 +622,7 @@ fn test_dynamic_height_respects_max_height() {
 
     for _ in 0..10 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
 
     assert_eq!(ta.height(), 5, "expected max height 5, got {}", ta.height());
@@ -688,7 +688,7 @@ fn test_dynamic_height_cursor_position_after_grow() {
 
     for i in 0..5 {
         ta.update(&*key_press(char::from(b'a' + i)));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
     ta.update(&*key_press('f'));
 
@@ -711,7 +711,7 @@ fn test_dynamic_height_cursor_position_after_shrink() {
 
     for i in 0..5 {
         ta.update(&*key_press(char::from(b'a' + i)));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
     ta.update(&*key_press('f'));
 
@@ -724,7 +724,7 @@ fn test_dynamic_height_cursor_position_after_shrink() {
 
     // Delete lines by backspacing
     for _ in 0..4 {
-        ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_BACKSPACE));
     }
 
     let cursor_line = ta.cursor_line_number();
@@ -763,7 +763,7 @@ fn test_max_content_height_scrolls_beyond_max_height() {
 
     for _ in 0..8 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
 
     assert_eq!(
@@ -794,7 +794,7 @@ fn test_max_content_height_blocks_at_limit() {
 
     for _ in 0..10 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
 
     assert!(
@@ -817,7 +817,7 @@ fn test_max_content_height_backward_compat() {
 
     for _ in 0..15 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
 
     assert!(
@@ -841,7 +841,7 @@ fn test_max_content_height_without_dynamic_height() {
 
     for _ in 0..10 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
 
     assert_eq!(
@@ -865,7 +865,7 @@ fn test_max_content_height_cursor_visible_while_scrolling() {
 
     for _ in 0..8 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
     ta.update(&*key_press('y'));
 
@@ -908,7 +908,7 @@ fn test_dynamic_height_shrinks_when_scrolled_and_lines_deleted() {
     // Type 8 lines so we exceed MaxHeight (5) and start scrolling
     for _ in 0..7 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
     ta.update(&*key_press('x'));
 
@@ -931,9 +931,9 @@ fn test_dynamic_height_shrinks_when_scrolled_and_lines_deleted() {
         ta.cursor_end();
         let (row, _) = ta.cursor_position();
         while !ta.value().split('\n').nth(row).unwrap_or("").is_empty() {
-            ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE));
+            ta.update(&*key_code(rusty_bubbletea::key::KEY_BACKSPACE));
         }
-        ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE)); // merge with previous line
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_BACKSPACE)); // merge with previous line
     }
 
     // Now we have 4 lines, which is less than MaxHeight (5).
@@ -960,7 +960,7 @@ fn test_dynamic_height_shrinks_when_scrolled_no_max_content() {
     // Type 8 lines
     for _ in 0..7 {
         ta.update(&*key_press('x'));
-        ta.update(&*key_code(charming_bubbletea::key::KEY_ENTER));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_ENTER));
     }
     ta.update(&*key_press('x'));
 
@@ -976,9 +976,9 @@ fn test_dynamic_height_shrinks_when_scrolled_no_max_content() {
         ta.cursor_end();
         let (row, _) = ta.cursor_position();
         while !ta.value().split('\n').nth(row).unwrap_or("").is_empty() {
-            ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE));
+            ta.update(&*key_code(rusty_bubbletea::key::KEY_BACKSPACE));
         }
-        ta.update(&*key_code(charming_bubbletea::key::KEY_BACKSPACE));
+        ta.update(&*key_code(rusty_bubbletea::key::KEY_BACKSPACE));
     }
 
     assert_eq!(
@@ -1019,8 +1019,8 @@ fn test_view() {
     // style setup used by the "set width with style" subtests.
     fn bordered(m: &mut textarea::Model) {
         let mut s = m.styles().clone();
-        s.focused.base = charming_lipgloss::new_style().border(
-            charming_lipgloss::border::Border::normal(),
+        s.focused.base = rusty_lipgloss::new_style().border(
+            rusty_lipgloss::border::Border::normal(),
             &[true, true, true, true],
         );
         m.set_styles(s);

@@ -6,13 +6,13 @@
 //! the same flow is driven through the public `update` with the suggestion
 //! key, which is what the upstream `Update` handler does.
 
-use charming_bubbles::textinput;
-use charming_bubbletea::key::{Key, KeyMod, KeyPressMsg};
-use charming_bubbletea::model::Msg;
+use rusty_bubbles::textinput;
+use rusty_bubbletea::key::{Key, KeyMod, KeyPressMsg};
+use rusty_bubbletea::model::Msg;
 
 fn suggestion_next() -> Box<dyn Msg> {
     Box::new(KeyPressMsg(Key::new(
-        charming_bubbletea::key::KEY_DOWN,
+        rusty_bubbletea::key::KEY_DOWN,
         "",
         KeyMod::default(),
     )))

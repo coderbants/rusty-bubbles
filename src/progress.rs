@@ -12,10 +12,10 @@
 //! transitions.
 //! </public-docs>
 
-use charming_bubbletea::commands;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::{self, Color, Style};
-use charming_x_ansi;
+use rusty_bubbletea::commands;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::{self, Color, Style};
+use rusty_x_ansi;
 use std::fmt;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::Duration;
@@ -77,8 +77,8 @@ pub fn default_empty_color() -> Color {
 /// Option is used to set options in [`new`]. For example:
 ///
 /// ```rust
-/// # use charming_bubbles::progress;
-/// # use charming_lipgloss::Color;
+/// # use rusty_bubbles::progress;
+/// # use rusty_lipgloss::Color;
 /// let progress = progress::new(vec![
 ///     progress::with_colors(&[Color::parse("#5A56E0"), Color::parse("#EE6FF8")]),
 ///     progress::without_percentage(),
@@ -134,8 +134,8 @@ pub fn with_colors(colors: &[Color]) -> Option {
 /// percentage:
 ///
 /// ```rust
-/// # use charming_bubbles::progress;
-/// # use charming_lipgloss::Color;
+/// # use rusty_bubbles::progress;
+/// # use rusty_lipgloss::Color;
 /// progress::with_color_func(Box::new(|total, _current| {
 ///     if total <= 0.3 {
 ///         return Color::parse("#FF0000");
@@ -392,7 +392,7 @@ impl Model {
         self.bar_view(
             &mut b,
             percent,
-            charming_x_ansi::string_width(&percent_view),
+            rusty_x_ansi::string_width(&percent_view),
         );
         b.push_str(&percent_view);
         b
@@ -451,9 +451,9 @@ impl Model {
             }
 
             let blend_colors = if self.scale_blend {
-                charming_lipgloss::blending::blend_1d(fw * multiplier, blend)
+                rusty_lipgloss::blending::blend_1d(fw * multiplier, blend)
             } else {
-                charming_lipgloss::blending::blend_1d(tw * multiplier, blend)
+                rusty_lipgloss::blending::blend_1d(tw * multiplier, blend)
             };
 
             // Blend fill.

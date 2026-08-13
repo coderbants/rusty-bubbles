@@ -3,7 +3,7 @@
 //!
 //! Spinner factory and preset equality tests.
 
-use charming_bubbles::spinner;
+use rusty_bubbles::spinner;
 
 fn assert_equal_spinner(exp: &spinner::Spinner, got: &spinner::Spinner) {
     assert_eq!(

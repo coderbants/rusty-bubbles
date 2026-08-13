@@ -8,8 +8,8 @@
 //! </public-docs>
 
 use crate::key::Binding;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::{color::Color, style::Style, TOP};
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::{color::Color, style::Style, TOP};
 
 /// KeyMap is a map of keybindings used to generate help. Since it's an
 /// interface it can be any type, though a struct or a map of bindings are
@@ -54,7 +54,7 @@ pub struct Styles {
 /// DefaultStyles returns a set of default styles for the help bubble. Light
 /// or dark styles can be selected by passing `is_dark`.
 pub fn default_styles(is_dark: bool) -> Styles {
-    let light_dark = charming_lipgloss::color::light_dark(is_dark);
+    let light_dark = rusty_lipgloss::color::light_dark(is_dark);
 
     let key_style =
         Style::new().foreground_color(light_dark(Color::parse("#909090"), Color::parse("#626262")));
@@ -185,7 +185,7 @@ impl Model {
                     .clone()
                     .inline(true)
                     .render(&kb.help().desc);
-            let w = charming_lipgloss::size::width(&str);
+            let w = rusty_lipgloss::size::width(&str);
 
             // Tail
             if let (tail, false) = self.should_add_item(total_width, w) {
@@ -251,8 +251,8 @@ impl Model {
                 .clone()
                 .render(&descriptions.join("\n"));
             let col =
-                charming_lipgloss::join::join_horizontal(TOP, &[&sep, &key_col, " ", &desc_col]);
-            let w = charming_lipgloss::size::width(&col);
+                rusty_lipgloss::join::join_horizontal(TOP, &[&sep, &key_col, " ", &desc_col]);
+            let w = rusty_lipgloss::size::width(&col);
 
             // Tail
             if let (tail, false) = self.should_add_item(total_width, w) {
@@ -267,7 +267,7 @@ impl Model {
         }
 
         let refs: Vec<&str> = out.iter().map(|s| s.as_str()).collect();
-        charming_lipgloss::join::join_horizontal(TOP, &refs)
+        rusty_lipgloss::join::join_horizontal(TOP, &refs)
     }
 
     fn should_add_item(&self, total_width: usize, width: usize) -> (String, bool) {
@@ -281,7 +281,7 @@ impl Model {
                     .inline(true)
                     .render(&self.ellipsis);
 
-            if total_width + charming_lipgloss::size::width(&tail) < self.width {
+            if total_width + rusty_lipgloss::size::width(&tail) < self.width {
                 return (tail, false);
             }
         }

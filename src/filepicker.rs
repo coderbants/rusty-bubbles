@@ -13,9 +13,9 @@
 //! </public-docs>
 
 use crate::key::{self, Binding};
-use charming_bubbletea::key::KeyPressMsg;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::{self, Style, RIGHT};
+use rusty_bubbletea::key::KeyPressMsg;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::{self, Style, RIGHT};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicI64, Ordering};
 
@@ -173,20 +173,20 @@ pub struct Styles {
 /// DefaultStyles defines the default styling for the file picker.
 pub fn default_styles() -> Styles {
     Styles {
-        disabled_cursor: charming_lipgloss::new_style().foreground("247"),
-        cursor: charming_lipgloss::new_style().foreground("212"),
-        symlink: charming_lipgloss::new_style().foreground("36"),
-        directory: charming_lipgloss::new_style().foreground("99"),
-        file: charming_lipgloss::new_style(),
-        disabled_file: charming_lipgloss::new_style().foreground("243"),
-        disabled_selected: charming_lipgloss::new_style().foreground("247"),
-        permission: charming_lipgloss::new_style().foreground("244"),
-        selected: charming_lipgloss::new_style().foreground("212").bold(true),
-        file_size: charming_lipgloss::new_style()
+        disabled_cursor: rusty_lipgloss::new_style().foreground("247"),
+        cursor: rusty_lipgloss::new_style().foreground("212"),
+        symlink: rusty_lipgloss::new_style().foreground("36"),
+        directory: rusty_lipgloss::new_style().foreground("99"),
+        file: rusty_lipgloss::new_style(),
+        disabled_file: rusty_lipgloss::new_style().foreground("243"),
+        disabled_selected: rusty_lipgloss::new_style().foreground("247"),
+        permission: rusty_lipgloss::new_style().foreground("244"),
+        selected: rusty_lipgloss::new_style().foreground("212").bold(true),
+        file_size: rusty_lipgloss::new_style()
             .foreground("240")
             .width(FILE_SIZE_WIDTH)
             .align(&[RIGHT]),
-        empty_directory: charming_lipgloss::new_style()
+        empty_directory: rusty_lipgloss::new_style()
             .foreground("240")
             .padding_left(PADDING_LEFT)
             .set_string(&["Bummer. No Files Found."]),
@@ -371,7 +371,7 @@ impl Model {
 
         if let Some(m) = msg
             .as_any()
-            .downcast_ref::<charming_bubbletea::screen::WindowSizeMsg>()
+            .downcast_ref::<rusty_bubbletea::screen::WindowSizeMsg>()
         {
             if self.auto_height {
                 self.set_height(m.height - MARGIN_BOTTOM);
@@ -581,7 +581,7 @@ impl Model {
             s += "\n";
         }
 
-        for _ in charming_lipgloss::size::height(&s)..=self.height() {
+        for _ in rusty_lipgloss::size::height(&s)..=self.height() {
             s += "\n";
         }
 

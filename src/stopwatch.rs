@@ -8,8 +8,8 @@
 //! </public-docs>
 
 use crate::internal::duration::duration_string;
-use charming_bubbletea::commands;
-use charming_bubbletea::model::{Cmd, Msg};
+use rusty_bubbletea::commands;
+use rusty_bubbletea::model::{Cmd, Msg};
 use std::fmt;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::Duration;
@@ -23,7 +23,7 @@ fn next_id() -> i32 {
 /// Option is a configuration option in [`new`]. For example:
 ///
 /// ```rust
-/// # use charming_bubbles::stopwatch;
+/// # use rusty_bubbles::stopwatch;
 /// # use std::time::Duration;
 /// let timer = stopwatch::new(vec![stopwatch::with_interval(Duration::from_secs(5))]);
 /// ```

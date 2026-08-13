@@ -10,11 +10,11 @@
 //! </public-docs>
 
 use crate::key::{self, Binding};
-use charming_bubbletea::key::KeyPressMsg;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_bubbletea::mouse::{MouseButton, MouseWheelMsg};
-use charming_lipgloss::{self, ranges::Range, Style};
-use charming_x_ansi;
+use rusty_bubbletea::key::KeyPressMsg;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_bubbletea::mouse::{MouseButton, MouseWheelMsg};
+use rusty_lipgloss::{self, ranges::Range, Style};
+use rusty_x_ansi;
 use std::collections::HashMap;
 
 /// defaultHorizontalStep is the number of columns the viewport moves
@@ -25,7 +25,7 @@ const DEFAULT_HORIZONTAL_STEP: usize = 6;
 /// For example:
 ///
 /// ```rust
-/// # use charming_bubbles::viewport;
+/// # use rusty_bubbles::viewport;
 /// let viewport = viewport::new(vec![viewport::with_width(10), viewport::with_height(5)]);
 /// ```
 pub type Option = Box<dyn FnOnce(&mut Model)>; // (std::option::Option is used for optionals)
@@ -113,7 +113,7 @@ pub struct GutterContext {
 /// Example implementation showing line numbers:
 ///
 /// ```rust
-/// # use charming_bubbles::viewport::{self, GutterContext};
+/// # use rusty_bubbles::viewport::{self, GutterContext};
 /// fn line_numbers(info: GutterContext) -> String {
 ///     if info.soft {
 ///         return "     │ ".to_string();
@@ -320,7 +320,7 @@ impl Model {
         // if there's no content, set content to actual nil instead of one
         // empty line.
         self.lines = lines.to_vec();
-        if self.lines.len() == 1 && charming_x_ansi::string_width(&self.lines[0]) == 0 {
+        if self.lines.len() == 1 && rusty_x_ansi::string_width(&self.lines[0]) == 0 {
             self.lines.clear();
         } else {
             // iterate in reverse, so we can safely modify the slice.
@@ -373,7 +373,7 @@ impl Model {
 
         for (i, line) in self.lines.iter().enumerate() {
             let line_height = 1usize
-                .max((charming_x_ansi::string_width(line) as f64 / max_width).ceil() as usize);
+                .max((rusty_x_ansi::string_width(line) as f64 / max_width).ceil() as usize);
 
             if yoffset >= total && yoffset < total + line_height {
                 ridx = i;
@@ -410,7 +410,7 @@ impl Model {
     fn max_width(&self) -> usize {
         let mut gutter_size = 0;
         if let Some(g) = &self.left_gutter_func {
-            gutter_size = charming_x_ansi::string_width(&g(GutterContext {
+            gutter_size = rusty_x_ansi::string_width(&g(GutterContext {
                 index: 0,
                 total_lines: 0,
                 soft: false,
@@ -462,7 +462,7 @@ impl Model {
 
         // Cut the lines to the viewport width.
         for line in lines.iter_mut() {
-            *line = charming_x_ansi::cut(line, self.x_offset, self.x_offset + max_width);
+            *line = rusty_x_ansi::cut(line, self.x_offset, self.x_offset + max_width);
         }
         self.setup_gutter(lines, total, ridx)
     }
@@ -496,9 +496,9 @@ impl Model {
                     if let Some(hi) = sel.lines.get(&(i + offset)) {
                         // Upstream re-styles the line with ONLY the selected
                         // range, replacing the normal highlight ranges.
-                        return charming_lipgloss::ranges::style_ranges(
+                        return rusty_lipgloss::ranges::style_ranges(
                             line,
-                            &[charming_lipgloss::ranges::new_range(
+                            &[rusty_lipgloss::ranges::new_range(
                                 hi.0,
                                 hi.1,
                                 self.selected_highlight_style.clone(),
@@ -506,7 +506,7 @@ impl Model {
                         );
                     }
                 }
-                charming_lipgloss::ranges::style_ranges(line, &ranges)
+                rusty_lipgloss::ranges::style_ranges(line, &ranges)
             })
             .collect()
     }
@@ -529,7 +529,7 @@ impl Model {
         for (i, line) in lines.iter().enumerate() {
             // If the line is less than or equal to the max width, it can be
             // added as is.
-            line_width = charming_x_ansi::string_width(line);
+            line_width = rusty_x_ansi::string_width(line);
 
             if line_width <= max_width {
                 if let Some(g) = &self.left_gutter_func {
@@ -547,7 +547,7 @@ impl Model {
 
             idx = 0;
             while line_width > idx {
-                truncated_line = charming_x_ansi::cut(line, idx, max_width + idx);
+                truncated_line = rusty_x_ansi::cut(line, idx, max_width + idx);
                 if let Some(g) = &self.left_gutter_func {
                     let gutter = g(GutterContext {
                         index: i + ridx,
@@ -838,7 +838,7 @@ impl Model {
                     // event for mouse actions.
                     if mouse
                         .mod_keys
-                        .contains(charming_bubbletea::key::KeyMod::SHIFT)
+                        .contains(rusty_bubbletea::key::KeyMod::SHIFT)
                     {
                         self.scroll_right(self.horizontal_step);
                         return;
@@ -850,7 +850,7 @@ impl Model {
                     // event for mouse actions.
                     if mouse
                         .mod_keys
-                        .contains(charming_bubbletea::key::KeyMod::SHIFT)
+                        .contains(rusty_bubbletea::key::KeyMod::SHIFT)
                     {
                         self.scroll_left(self.horizontal_step);
                         return;
@@ -888,7 +888,7 @@ impl Model {
         let content_width = w - self.style.get_horizontal_frame_size();
         let content_height = h - self.style.get_vertical_frame_size();
         let vl = self.visible_lines();
-        let contents = charming_lipgloss::new_style()
+        let contents = rusty_lipgloss::new_style()
             .width(content_width) // pad to width.
             .height(content_height) // pad to height.
             .render(&vl.join("\n"));
@@ -1001,7 +1001,7 @@ fn parse_matches(content: &str, matches: &[Vec<usize>]) -> Vec<HighlightInfo> {
     // NOTE: matches are byte ranges into the raw (unstyled) content, so the
     // walk below must index by *byte* position, decoding each UTF-8 char as
     // it goes (the upstream Go code indexes a []byte directly).
-    let stripped: Vec<u8> = charming_x_ansi::strip(content).as_bytes().to_vec();
+    let stripped: Vec<u8> = rusty_x_ansi::strip(content).as_bytes().to_vec();
 
     let mut highlights: Vec<HighlightInfo> = Vec::with_capacity(matches.len());
 
@@ -1092,7 +1092,7 @@ fn make_highlight_ranges(highlights: &[HighlightInfo], line: usize, style: &Styl
             if *lihi == (0, 0) {
                 continue;
             }
-            result.push(charming_lipgloss::ranges::new_range(
+            result.push(rusty_lipgloss::ranges::new_range(
                 lihi.0,
                 lihi.1,
                 style.clone(),
@@ -1126,7 +1126,7 @@ fn clamp<T: PartialOrd + Copy>(v: T, low: T, high: T) -> T {
 fn max_line_width(lines: &[String]) -> usize {
     let mut result = 0;
     for line in lines {
-        result = result.max(charming_x_ansi::string_width(line));
+        result = result.max(rusty_x_ansi::string_width(line));
     }
     result
 }

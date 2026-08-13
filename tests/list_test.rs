@@ -6,8 +6,8 @@
 //! assertions run against the full rendered view, which contains the
 //! status bar.
 
-use charming_bubbles::list::{self, FilterState, Item, ItemDelegate, Model};
-use charming_bubbletea::model::{Cmd, Msg};
+use rusty_bubbles::list::{self, FilterState, Item, ItemDelegate, Model};
+use rusty_bubbletea::model::{Cmd, Msg};
 
 #[derive(Debug)]
 struct Item_(String);

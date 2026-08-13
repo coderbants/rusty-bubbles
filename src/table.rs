@@ -10,10 +10,10 @@
 use crate::help;
 use crate::key::{self, Binding};
 use crate::viewport;
-use charming_bubbletea::key::KeyPressMsg;
-use charming_bubbletea::model::{Cmd, Msg};
-use charming_lipgloss::{self, Style};
-use charming_x_ansi;
+use rusty_bubbletea::key::KeyPressMsg;
+use rusty_bubbletea::model::{Cmd, Msg};
+use rusty_lipgloss::{self, Style};
+use rusty_x_ansi;
 
 /// Model defines a state for the table widget.
 #[derive(Debug)]
@@ -157,16 +157,16 @@ pub struct Styles {
 /// DefaultStyles returns a set of default style definitions for this table.
 pub fn default_styles() -> Styles {
     Styles {
-        selected: charming_lipgloss::new_style().bold(true).foreground("212"),
-        header: charming_lipgloss::new_style().bold(true).padding(&[0, 1]),
-        cell: charming_lipgloss::new_style().padding(&[0, 1]),
+        selected: rusty_lipgloss::new_style().bold(true).foreground("212"),
+        header: rusty_lipgloss::new_style().bold(true).padding(&[0, 1]),
+        cell: rusty_lipgloss::new_style().padding(&[0, 1]),
     }
 }
 
 /// Option is used to set options in [`new`]. For example:
 ///
 /// ```rust
-/// # use charming_bubbles::table;
+/// # use rusty_bubbles::table;
 /// let table = table::new(vec![table::with_columns(&[table::Column {
 ///     title: "ID".to_string(),
 ///     width: 10,
@@ -219,7 +219,7 @@ pub fn with_rows(rows: &[Row]) -> Option {
 /// WithHeight sets the height of the table.
 pub fn with_height(h: usize) -> Option {
     Box::new(move |m: &mut Model| {
-        let hh = charming_lipgloss::size::height(&m.headers_view());
+        let hh = rusty_lipgloss::size::height(&m.headers_view());
         m.viewport.set_height(h - hh);
     })
 }
@@ -344,8 +344,8 @@ impl Model {
 
         let refs: Vec<&str> = rendered_rows.iter().map(|s| s.as_str()).collect();
         self.viewport
-            .set_content(&charming_lipgloss::join::join_vertical(
-                charming_lipgloss::LEFT,
+            .set_content(&rusty_lipgloss::join::join_vertical(
+                rusty_lipgloss::LEFT,
                 &refs,
             ));
     }
@@ -394,7 +394,7 @@ impl Model {
 
     /// SetHeight sets the height of the viewport of the table.
     pub fn set_height(&mut self, h: usize) {
-        let hh = charming_lipgloss::size::height(&self.headers_view());
+        let hh = rusty_lipgloss::size::height(&self.headers_view());
         self.viewport.set_height(h - hh);
         self.update_viewport();
     }
@@ -496,16 +496,16 @@ impl Model {
             if col.width == 0 {
                 continue;
             }
-            let style = charming_lipgloss::new_style()
+            let style = rusty_lipgloss::new_style()
                 .width(col.width)
                 .max_width(col.width)
                 .inline(true);
             let rendered_cell =
-                style.render(&charming_x_ansi::truncate(&col.title, col.width, "…"));
+                style.render(&rusty_x_ansi::truncate(&col.title, col.width, "…"));
             s.push(self.styles.header.clone().render(&rendered_cell));
         }
         let refs: Vec<&str> = s.iter().map(|x| x.as_str()).collect();
-        charming_lipgloss::join::join_horizontal(charming_lipgloss::TOP, &refs)
+        rusty_lipgloss::join::join_horizontal(rusty_lipgloss::TOP, &refs)
     }
 
     fn render_row(&self, r: usize) -> String {
@@ -514,17 +514,17 @@ impl Model {
             if self.cols[i].width == 0 {
                 continue;
             }
-            let style = charming_lipgloss::new_style()
+            let style = rusty_lipgloss::new_style()
                 .width(self.cols[i].width)
                 .max_width(self.cols[i].width)
                 .inline(true);
             let rendered_cell =
-                style.render(&charming_x_ansi::truncate(value, self.cols[i].width, "…"));
+                style.render(&rusty_x_ansi::truncate(value, self.cols[i].width, "…"));
             s.push(self.styles.cell.clone().render(&rendered_cell));
         }
 
         let refs: Vec<&str> = s.iter().map(|x| x.as_str()).collect();
-        let row = charming_lipgloss::join::join_horizontal(charming_lipgloss::TOP, &refs);
+        let row = rusty_lipgloss::join::join_horizontal(rusty_lipgloss::TOP, &refs);
 
         if r == self.cursor {
             return self.styles.selected.clone().render(&row);

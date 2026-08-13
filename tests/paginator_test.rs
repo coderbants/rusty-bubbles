@@ -4,9 +4,9 @@
 //! Paginator navigation tests, including regression coverage for rapid
 //! consecutive key presses in both directions.
 
-use charming_bubbles::paginator::{self, Model, Type};
-use charming_bubbletea::key::{Key, KeyMod, KeyPressMsg};
-use charming_bubbletea::model::Msg;
+use rusty_bubbles::paginator::{self, Model, Type};
+use rusty_bubbletea::key::{Key, KeyMod, KeyPressMsg};
+use rusty_bubbletea::model::Msg;
 
 fn key_press(key: char) -> Box<dyn Msg> {
     Box::new(KeyPressMsg(Key::new(
@@ -18,8 +18,8 @@ fn key_press(key: char) -> Box<dyn Msg> {
 
 fn arrow(name: &str) -> Box<dyn Msg> {
     let code = match name {
-        "right" => charming_bubbletea::key::KEY_RIGHT,
-        "left" => charming_bubbletea::key::KEY_LEFT,
+        "right" => rusty_bubbletea::key::KEY_RIGHT,
+        "left" => rusty_bubbletea::key::KEY_LEFT,
         _ => panic!("bad arrow"),
     };
     Box::new(KeyPressMsg(Key::new(code, "", KeyMod::default())))
