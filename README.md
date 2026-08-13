@@ -1,4 +1,4 @@
-<p>
+<p align="center">
     <a href="rusty_bubbles.png"><img src="rusty_bubbles.png" width="313" alt="Rusty Bubbles"></a><br>
     <a href="https://crates.io/crates/rusty-bubbles"><img src="https://img.shields.io/crates/v/rusty-bubbles.svg" alt="crates.io"></a>
     <a href="https://github.com/coderbants/rusty-bubbles/actions"><img src="https://github.com/coderbants/rusty-bubbles/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
