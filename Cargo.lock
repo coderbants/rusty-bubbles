@@ -40,7 +40,7 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "charming-bubbles"
-version = "2.1.1"
+version = "2.1.2"
 dependencies = [
  "charming-bubbletea",
  "charming-lipgloss",
@@ -52,7 +52,7 @@ dependencies = [
 
 [[package]]
 name = "charming-bubbletea"
-version = "2.0.9"
+version = "2.0.10"
 dependencies = [
  "charming-colorprofile",
  "charming-lipgloss",
@@ -68,14 +68,14 @@ dependencies = [
 
 [[package]]
 name = "charming-colorprofile"
-version = "0.4.4"
+version = "0.4.5"
 dependencies = [
  "charming-x-ansi",
 ]
 
 [[package]]
 name = "charming-lipgloss"
-version = "2.0.6"
+version = "2.0.7"
 dependencies = [
  "charming-colorprofile",
  "charming-ultraviolet",
@@ -87,7 +87,7 @@ dependencies = [
 
 [[package]]
 name = "charming-ultraviolet"
-version = "0.0.0-20260812000000"
+version = "0.0.0-20260813000000"
 dependencies = [
  "charming-colorprofile",
  "charming-x-ansi",
@@ -98,7 +98,7 @@ dependencies = [
 
 [[package]]
 name = "charming-x-ansi"
-version = "0.0.0-20260812000000"
+version = "0.0.0-20260813000000"
 dependencies = [
  "libc",
  "unicode-segmentation",

@@ -1,14 +1,14 @@
 [package]
 name = "charming-bubbles"
-version = "2.1.1"
+version = "2.1.2"
 edition = "2021"
 description = "Cleanroom Rust port of charm.land/bubbles/v2: TUI components for Bubble Tea applications"
 license = "MIT"
 
 [dependencies]
-charming-bubbletea = { version = "2.0.9", path = "../charming-bubbletea" }
-charming-lipgloss = { version = "2.0.6", path = "../charming-lipgloss" }
-charming-x-ansi = { version = "0.0.0-20260812000000", path = "../charming-x-ansi" }
+charming-bubbletea = { version = "2.0.10", path = "../charming-bubbletea" }
+charming-lipgloss = { version = "2.0.7", path = "../charming-lipgloss" }
+charming-x-ansi = { version = "0.0.0-20260813000000", path = "../charming-x-ansi" }
 unicode-width = "0.2"
 sha2 = "0.10"
 
