@@ -8,7 +8,7 @@
 
 # Rusty Bubbles (`rusty-bubbles`)
 
-**Rusty Bubbles** is a complete, from-scratch Rust port of [Bubbles](https://github.com/charmbracelet/bubbles), the library of common UI components for Bubble Tea — text inputs, text areas, spinners, stopwatches, file pickers, help views, viewports and more. It tracks upstream Go releases on a rolling basis. **Version policy: the crate version and every release tag must equal the tracked upstream version exactly — never ahead, never behind** (enforced by `scripts/verify_upstream_version.sh` in CI and on every release). It holds a hard goal of **1:1 behavioural, visual and license parity**, favoring fidelity to upstream over Rust-native rewrites whenever the two would diverge.
+**Rusty Bubbles** is a complete, from-scratch Rust port of [Bubbles](https://github.com/charmbracelet/bubbles), the library of common UI components for Bubble Tea — text inputs, text areas, spinners, stopwatches, file pickers, help views, viewports and more. It tracks upstream Go releases on a rolling basis under the family's [porting policies](./POLICIES.md): versions mirror upstream exactly, never ahead or behind, with a hard goal of **1:1 behavioural, visual and license parity**, favouring fidelity to upstream semantics over Rust-native rewrites.
 
 It's part of the Rusty port family of the Bubble Tea ecosystem and builds on [rusty-bubbletea](https://github.com/coderbants/rusty-bubbletea), [rusty-lipgloss](https://github.com/coderbants/rusty-lipgloss) and [rusty-ultraviolet](https://github.com/coderbants/rusty-ultraviolet).
 
