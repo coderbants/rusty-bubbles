@@ -909,8 +909,8 @@ impl Model {
                 avail_height.saturating_sub(rusty_lipgloss::size::height(&self.status_view()));
         }
         if self.show_pagination {
-            avail_height = avail_height
-                .saturating_sub(rusty_lipgloss::size::height(&self.pagination_view()));
+            avail_height =
+                avail_height.saturating_sub(rusty_lipgloss::size::height(&self.pagination_view()));
         }
         if self.show_help {
             avail_height =
@@ -1196,8 +1196,7 @@ impl Model {
         let mut pagination = String::new();
         if self.show_pagination {
             pagination = self.pagination_view();
-            avail_height =
-                avail_height.saturating_sub(rusty_lipgloss::size::height(&pagination));
+            avail_height = avail_height.saturating_sub(rusty_lipgloss::size::height(&pagination));
         }
 
         let mut help_view = String::new();

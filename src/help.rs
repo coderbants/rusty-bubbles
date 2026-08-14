@@ -250,8 +250,7 @@ impl Model {
                 .full_desc
                 .clone()
                 .render(&descriptions.join("\n"));
-            let col =
-                rusty_lipgloss::join::join_horizontal(TOP, &[&sep, &key_col, " ", &desc_col]);
+            let col = rusty_lipgloss::join::join_horizontal(TOP, &[&sep, &key_col, " ", &desc_col]);
             let w = rusty_lipgloss::size::width(&col);
 
             // Tail

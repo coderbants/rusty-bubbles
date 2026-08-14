@@ -500,8 +500,7 @@ impl Model {
                 .width(col.width)
                 .max_width(col.width)
                 .inline(true);
-            let rendered_cell =
-                style.render(&rusty_x_ansi::truncate(&col.title, col.width, "…"));
+            let rendered_cell = style.render(&rusty_x_ansi::truncate(&col.title, col.width, "…"));
             s.push(self.styles.header.clone().render(&rendered_cell));
         }
         let refs: Vec<&str> = s.iter().map(|x| x.as_str()).collect();

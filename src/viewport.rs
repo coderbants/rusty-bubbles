@@ -372,8 +372,8 @@ impl Model {
         let mut voffset = 0usize;
 
         for (i, line) in self.lines.iter().enumerate() {
-            let line_height = 1usize
-                .max((rusty_x_ansi::string_width(line) as f64 / max_width).ceil() as usize);
+            let line_height =
+                1usize.max((rusty_x_ansi::string_width(line) as f64 / max_width).ceil() as usize);
 
             if yoffset >= total && yoffset < total + line_height {
                 ridx = i;
@@ -836,10 +836,7 @@ impl Model {
                 MouseButton::MouseWheelDown => {
                     // NOTE: some terminal emulators don't send the shift
                     // event for mouse actions.
-                    if mouse
-                        .mod_keys
-                        .contains(rusty_bubbletea::key::KeyMod::SHIFT)
-                    {
+                    if mouse.mod_keys.contains(rusty_bubbletea::key::KeyMod::SHIFT) {
                         self.scroll_right(self.horizontal_step);
                         return;
                     }
@@ -848,10 +845,7 @@ impl Model {
                 MouseButton::MouseWheelUp => {
                     // NOTE: some terminal emulators don't send the shift
                     // event for mouse actions.
-                    if mouse
-                        .mod_keys
-                        .contains(rusty_bubbletea::key::KeyMod::SHIFT)
-                    {
+                    if mouse.mod_keys.contains(rusty_bubbletea::key::KeyMod::SHIFT) {
                         self.scroll_left(self.horizontal_step);
                         return;
                     }

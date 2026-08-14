@@ -389,11 +389,7 @@ impl Model {
     pub fn view_as(&self, percent: f64) -> String {
         let mut b = String::new();
         let percent_view = self.percentage_view(percent);
-        self.bar_view(
-            &mut b,
-            percent,
-            rusty_x_ansi::string_width(&percent_view),
-        );
+        self.bar_view(&mut b, percent, rusty_x_ansi::string_width(&percent_view));
         b.push_str(&percent_view);
         b
     }
