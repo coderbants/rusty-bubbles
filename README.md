@@ -2,7 +2,7 @@
     <a href="rusty-bubbles.png"><img src="rusty-bubbles.png" width="313" alt="Rusty Bubbles"></a><br>
     <a href="https://crates.io/crates/rusty-bubbles"><img src="https://img.shields.io/crates/v/rusty-bubbles.svg" alt="crates.io"></a>
     <a href="https://github.com/coderbants/rusty-bubbles/actions"><img src="https://github.com/coderbants/rusty-bubbles/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
-    <a href="https://app.codecov.io/gh/coderbants/rusty-bubbles"><img src="https://codecov.io/gh/coderbants/rusty-bubbles/branch/dev/graph/badge.svg" alt="codecov"></a>
+    <a href="coverage.svg"><img src="coverage.svg" alt="coverage"></a>
 
 </p>
 
