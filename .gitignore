@@ -4,3 +4,4 @@ upstream-go/
 # Added by cargo
 
 /target
+/tmp
