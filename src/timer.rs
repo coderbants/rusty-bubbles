@@ -215,3 +215,78 @@ impl Model {
         }))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_timer_lifecycle() {
+        let mut m = new(
+            Duration::from_secs(5),
+            vec![with_interval(Duration::from_secs(1))],
+        );
+        assert!(m.running());
+        assert!(!m.timedout());
+        assert_eq!(m.view(), "5s");
+        assert!(format!("{m:?}").contains("timer::Model"));
+
+        // Init
+        let cmd = m.init();
+        assert!(cmd.is_some());
+
+        // TickMsg
+        let cmd = m.update(&TickMsg {
+            id: m.id(),
+            tag: m.tag,
+            timeout: false,
+        });
+        assert!(cmd.is_some());
+        assert_eq!(m.timeout, Duration::from_secs(4));
+        assert_eq!(m.view(), "4s");
+
+        // Stale tag ignored
+        let cmd = m.update(&TickMsg {
+            id: m.id(),
+            tag: 999,
+            timeout: false,
+        });
+        assert!(cmd.is_none());
+
+        // Stop / Start / Toggle
+        let stop_cmd = m.stop();
+        assert!(stop_cmd.is_some());
+        m.update(&StartStopMsg {
+            id: m.id(),
+            running: false,
+        });
+        assert!(!m.running());
+
+        let start_cmd = m.start();
+        assert!(start_cmd.is_some());
+        m.update(&StartStopMsg {
+            id: m.id(),
+            running: true,
+        });
+        assert!(m.running());
+
+        let toggle_cmd = m.toggle();
+        assert!(toggle_cmd.is_some());
+
+        // Reach timeout
+        m.timeout = Duration::from_secs(1);
+        let cmd = m.update(&TickMsg {
+            id: m.id(),
+            tag: m.tag,
+            timeout: false,
+        });
+        assert!(cmd.is_some());
+        assert!(m.timedout());
+        assert!(!m.running());
+        assert_eq!(m.view(), "0s");
+
+        // Start/stop on timedout timer has no effect
+        assert!(m.start().is_some());
+        assert!(!m.running());
+    }
+}

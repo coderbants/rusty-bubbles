@@ -160,3 +160,43 @@ pub fn matches<K: fmt::Display>(k: K, bindings: &[Binding]) -> bool {
     }
     false
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_key_binding_methods() {
+        let mut b = new_binding(vec![with_disabled(), with_help("q", "quit")]);
+        assert!(!b.enabled());
+        b.set_enabled(true);
+        assert!(!b.enabled()); // No keys set yet
+
+        b.set_keys(&["q", "ctrl+c"]);
+        assert!(b.enabled());
+        assert_eq!(b.keys(), vec!["q".to_string(), "ctrl+c".to_string()]);
+        assert_eq!(
+            b.help(),
+            Help {
+                key: "q".to_string(),
+                desc: "quit".to_string()
+            }
+        );
+
+        b.set_help("esc", "exit");
+        assert_eq!(
+            b.help(),
+            Help {
+                key: "esc".to_string(),
+                desc: "exit".to_string()
+            }
+        );
+
+        assert!(matches("q", &[b.clone()]));
+        assert!(matches("ctrl+c", &[b.clone()]));
+        assert!(!matches("x", &[b.clone()]));
+
+        b.set_enabled(false);
+        assert!(!matches("q", &[b]));
+    }
+}

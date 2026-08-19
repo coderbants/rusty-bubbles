@@ -614,3 +614,51 @@ impl Spring {
         (new_pos, new_vel)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_progress_options_and_update() {
+        let mut p = new(vec![
+            with_width(20),
+            with_colors(&[Color::parse("#FF0000")]),
+            with_spring_options(12.0, 1.0),
+        ]);
+        assert_eq!(p.width(), 20);
+        assert_eq!(p.percent(), 0.0);
+        assert!(p.view().contains("0%"));
+
+        let set_cmd = p.set_percent(0.8);
+        assert!(set_cmd.is_some());
+        assert_eq!(p.target_percent, 0.8);
+
+        // Update with FrameMsg
+        let cmd = p.update(&FrameMsg {
+            id: p.id,
+            tag: p.tag,
+        });
+        assert!(cmd.is_some());
+
+        // Stale tag ignored
+        let stale = p.update(&FrameMsg { id: p.id, tag: 999 });
+        assert!(stale.is_none());
+
+        // Spring over-damped, under-damped, critically-damped
+        let s_over = Spring::new(0.016, 5.0, 1.5);
+        let (pos, vel) = s_over.update(0.0, 0.0, 1.0);
+        assert!(pos >= 0.0);
+        assert!(vel >= 0.0);
+
+        let s_under = Spring::new(0.016, 5.0, 0.5);
+        let (pos, vel) = s_under.update(0.0, 0.0, 1.0);
+        assert!(pos >= 0.0);
+        assert!(vel >= 0.0);
+
+        let s_crit = Spring::new(0.016, 5.0, 1.0);
+        let (pos, vel) = s_crit.update(0.0, 0.0, 1.0);
+        assert!(pos >= 0.0);
+        assert!(vel >= 0.0);
+    }
+}

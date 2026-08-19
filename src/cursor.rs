@@ -272,3 +272,51 @@ impl Model {
 pub fn blink() -> Box<dyn Msg> {
     Box::new(InitialBlinkMsg)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cursor_modes_and_views() {
+        let mut c = new();
+        assert_eq!(c.mode(), Mode::Blink);
+        assert_eq!(Mode::Blink.to_string(), "blink");
+        assert_eq!(Mode::Static.to_string(), "static");
+        assert_eq!(Mode::Hide.to_string(), "hidden");
+
+        c.set_char("X");
+        assert_eq!(c.view(), "X");
+
+        // Focus & blur
+        let cmd = c.focus();
+        assert!(cmd.is_some());
+        assert!(!c.is_blinked);
+
+        c.blur();
+        assert!(c.is_blinked);
+
+        // Update InitialBlinkMsg, FocusMsg, BlurMsg
+        c.focus = true;
+        let cmd = c.update(&InitialBlinkMsg);
+        assert!(cmd.is_some());
+
+        c.update(&rusty_bubbletea::focus::BlurMsg);
+        assert!(!c.focus);
+
+        c.update(&rusty_bubbletea::focus::FocusMsg);
+        assert!(c.focus);
+
+        // SetMode Static / Hide
+        c.set_mode(Mode::Static);
+        assert_eq!(c.mode(), Mode::Static);
+        assert!(!c.is_blinked);
+
+        c.set_mode(Mode::Hide);
+        assert_eq!(c.mode(), Mode::Hide);
+        assert!(c.is_blinked);
+
+        // Initial blink helper
+        let _ = blink();
+    }
+}

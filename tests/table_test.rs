@@ -627,3 +627,41 @@ fn test_model_view_centered_in_a_box() {
 
     common::assert_golden(&got, "TestModel_View_CenteredInABox.golden");
 }
+
+#[test]
+fn test_table_options_and_navigation_update() {
+    use rusty_bubbletea::key::{Key, KeyMod, KeyPressMsg};
+
+    let mut m = table::new(vec![
+        table::with_columns(&biscuit_cols()),
+        table::with_rows(&biscuit_rows()),
+        table::with_height(10),
+        table::with_width(60),
+        table::with_focused(true),
+        table::with_styles(table::default_styles()),
+    ]);
+
+    assert!(m.focused());
+    assert_eq!(m.cursor(), 0);
+    assert!(m.selected_row().is_some());
+
+    // Update with key presses
+    m.update(&KeyPressMsg(Key::new('j', "down", KeyMod::default())));
+    assert_eq!(m.cursor(), 1);
+
+    m.update(&KeyPressMsg(Key::new('k', "up", KeyMod::default())));
+    assert_eq!(m.cursor(), 0);
+
+    m.update(&KeyPressMsg(Key::new('G', "G", KeyMod::default())));
+    assert_eq!(m.cursor(), biscuit_rows().len() - 1);
+
+    m.update(&KeyPressMsg(Key::new('g', "g", KeyMod::default())));
+    assert_eq!(m.cursor(), 0);
+
+    // Help view & blur/focus
+    assert!(!m.help_view().is_empty());
+    m.blur();
+    assert!(!m.focused());
+    m.focus();
+    assert!(m.focused());
+}

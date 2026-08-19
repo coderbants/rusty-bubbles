@@ -6,7 +6,9 @@
 //! assertions run against the full rendered view, which contains the
 //! status bar.
 
-use rusty_bubbles::list::{self, FilterState, Item, ItemDelegate, Model};
+use rusty_bubbles::list::{
+    self, new, new_default_delegate, DefaultItem, FilterState, Item, ItemDelegate, Model,
+};
 use rusty_bubbletea::model::{Cmd, Msg};
 
 #[derive(Debug)]
@@ -174,4 +176,157 @@ fn test_set_filter_state() {
         footer.contains(expected),
         "expected view to contain '{expected}'"
     );
+}
+
+#[test]
+fn test_list_navigation_and_items() {
+    use rusty_bubbletea::key::{Key, KeyMod, KeyPressMsg};
+
+    let items = vec![
+        Item_("Apple".into()),
+        Item_("Banana".into()),
+        Item_("Cherry".into()),
+        Item_("Date".into()),
+        Item_("Elderberry".into()),
+    ];
+    let mut list = new_list(items);
+    list.title = "Fruits".to_string();
+    assert_eq!(list.index(), 0);
+    assert_eq!(list.selected_item().unwrap().filter_value(), "Apple");
+
+    // Select down / up
+    list.select(2);
+    assert_eq!(list.index(), 2);
+    assert_eq!(list.selected_item().unwrap().filter_value(), "Cherry");
+
+    list.cursor_up();
+    assert_eq!(list.index(), 1);
+
+    list.cursor_down();
+    assert_eq!(list.index(), 2);
+
+    // Key update
+    list.update(&KeyPressMsg(Key::new('k', "k", KeyMod::default())));
+    assert_eq!(list.index(), 1);
+
+    list.update(&KeyPressMsg(Key::new('j', "j", KeyMod::default())));
+    assert_eq!(list.index(), 2);
+
+    // Reset selected item & set items
+    list.set_items(vec![
+        Box::new(Item_("X".into())),
+        Box::new(Item_("Y".into())),
+    ]);
+    assert_eq!(list.items().len(), 2);
+
+    // Insert item & remove item
+    list.insert_item(1, Box::new(Item_("Inserted".into())));
+    assert_eq!(list.items().len(), 3);
+    list.remove_item(1);
+    assert_eq!(list.items().len(), 2);
+
+    // Set item
+    list.set_item(0, Box::new(Item_("Z".into())));
+    assert_eq!(list.visible_items()[0].filter_value(), "Z");
+
+    // Infinite scrolling
+    list.infinite_scrolling = true;
+    list.select(0);
+    list.cursor_up();
+    assert_eq!(list.index(), 1);
+    list.cursor_down();
+    assert_eq!(list.index(), 0);
+
+    // Toggle spinner
+    let cmd = list.toggle_spinner();
+    assert!(cmd.is_some());
+    assert!(list.show_spinner);
+    let cmd2 = list.toggle_spinner();
+    assert!(cmd2.is_none());
+    assert!(!list.show_spinner);
+
+    // Filter value & state methods
+    assert_eq!(list.filter_state().to_string(), "unfiltered");
+    assert!(!list.setting_filter());
+    assert!(!list.is_filtered());
+
+    #[derive(Debug)]
+    struct TestItem {
+        title: String,
+        desc: String,
+    }
+    impl Item for TestItem {
+        fn filter_value(&self) -> String {
+            self.title.clone()
+        }
+        fn as_default_item(&self) -> Option<&dyn DefaultItem> {
+            Some(self)
+        }
+        fn box_clone(&self) -> Box<dyn Item + Send + Sync> {
+            Box::new(TestItem {
+                title: self.title.clone(),
+                desc: self.desc.clone(),
+            })
+        }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
+    impl DefaultItem for TestItem {
+        fn title(&self) -> String {
+            self.title.clone()
+        }
+        fn description(&self) -> String {
+            self.desc.clone()
+        }
+    }
+
+    let delegate = new_default_delegate();
+    let mut list2 = new(
+        vec![
+            Box::new(TestItem {
+                title: "Foo".into(),
+                desc: "Foo desc".into(),
+            }),
+            Box::new(TestItem {
+                title: "Bar".into(),
+                desc: "Bar desc".into(),
+            }),
+        ],
+        Box::new(delegate),
+        40,
+        20,
+    );
+    let v = list2.view();
+    assert!(v.contains("Foo"));
+    assert!(v.contains("Foo desc"));
+
+    // Enter filtering with '/'
+    list2.update(&KeyPressMsg(Key::new('/', "/", KeyMod::default())));
+    assert_eq!(list2.filter_state(), FilterState::Filtering);
+    assert!(list2.setting_filter());
+
+    // Type filter chars
+    list2.update(&KeyPressMsg(Key::new('F', "F", KeyMod::default())));
+    list2.update(&KeyPressMsg(Key::new('o', "o", KeyMod::default())));
+    assert_eq!(list2.filter_value(), "Fo");
+
+    // Accept filter with enter
+    list2.update(&KeyPressMsg(Key::new(
+        rusty_bubbletea::key::KEY_ENTER,
+        "enter",
+        KeyMod::default(),
+    )));
+    assert_eq!(list2.filter_state(), FilterState::FilterApplied);
+    assert!(list2.is_filtered());
+
+    // Clear filter with esc
+    list2.update(&KeyPressMsg(Key::new('\x1b', "esc", KeyMod::default())));
+    assert_eq!(list2.filter_state(), FilterState::Unfiltered);
+
+    // Full help toggle with '?'
+    list2.update(&KeyPressMsg(Key::new('?', "?", KeyMod::default())));
+    assert!(list2.help.show_all);
+    list2.update(&KeyPressMsg(Key::new('?', "?", KeyMod::default())));
+    assert!(!list2.help.show_all);
 }

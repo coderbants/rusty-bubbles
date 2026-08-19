@@ -674,6 +674,50 @@ fn test_sizing() {
     let _ = vt.view();
 }
 
+#[test]
+fn test_viewport_scroll_percentages_and_helpers() {
+    let mut vt = new_vt(20, 5);
+    vt.set_content(
+        "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10",
+    );
+    assert!(vt.at_top());
+    assert!(!vt.at_bottom());
+    assert_eq!(vt.scroll_percent(), 0.0);
+
+    // Scroll down and half page
+    vt.scroll_down(1);
+    assert_eq!(vt.y_offset(), 1);
+    assert!(!vt.at_top());
+
+    vt.half_page_down();
+    vt.half_page_up();
+
+    vt.goto_bottom();
+    assert!(vt.at_bottom());
+    assert_eq!(vt.scroll_percent(), 1.0);
+
+    vt.goto_top();
+    assert!(vt.at_top());
+
+    // Horizontal scrolling
+    vt.set_content("A very long line that exceeds the width of the viewport by many columns");
+    assert_eq!(vt.horizontal_scroll_percent(), 0.0);
+    vt.scroll_right(10);
+    assert!(vt.horizontal_scroll_percent() > 0.0);
+    vt.scroll_left(10);
+    assert_eq!(vt.x_offset(), 0);
+
+    // Left gutter & style line closure
+    vt.left_gutter_func = Some(Box::new(|ctx: GutterContext| -> String {
+        format!("{:2} ", ctx.index + 1)
+    }));
+    vt.style_line_func = Some(Box::new(|_idx: usize| -> rusty_lipgloss::Style {
+        rusty_lipgloss::new_style()
+    }));
+    let view_output = vt.view();
+    assert!(view_output.contains(" 1 "));
+}
+
 /// Port of the upstream `BenchmarkView` (no Go-style benches on stable
 /// Rust): a performance smoke test that renders the viewport repeatedly.
 /// Ignored by default so CI stays fast; run with `--ignored` to sanity

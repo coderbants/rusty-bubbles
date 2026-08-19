@@ -176,8 +176,8 @@ impl Model {
         if format == "%d/%d" {
             format!("{}/{}", self.page + 1, self.total_pages)
         } else {
-            let s = format.replace("%d", &(self.page + 1).to_string());
-            s.replace("%d", &self.total_pages.to_string())
+            let s = format.replacen("%d", &(self.page + 1).to_string(), 1);
+            s.replacen("%d", &self.total_pages.to_string(), 1)
         }
     }
 }

@@ -2348,3 +2348,29 @@ fn test_view() {
         );
     }
 }
+
+#[test]
+fn test_textarea_words_and_deletion_methods() {
+    let mut ta = new_text_area();
+    ta.set_value("hello world\nfoo bar baz");
+    assert_eq!(ta.line_count(), 2);
+    assert!(ta.length() > 0);
+
+    // Word navigation
+    ta.set_cursor_position(0, 0);
+    ta.update(&KeyPressMsg(Key::new('f', "alt+f", KeyMod::default())));
+    assert_eq!(ta.cursor_position(), (0, 5));
+
+    ta.update(&KeyPressMsg(Key::new('b', "alt+b", KeyMod::default())));
+    assert_eq!(ta.cursor_position(), (0, 0));
+
+    // Delete word right
+    ta.set_cursor_position(0, 0);
+    ta.update(&KeyPressMsg(Key::new('d', "alt+d", KeyMod::default())));
+    assert_eq!(ta.value(), " world\nfoo bar baz");
+
+    // Reset
+    ta.reset();
+    assert_eq!(ta.value(), "");
+    assert_eq!(ta.cursor_position(), (0, 0));
+}

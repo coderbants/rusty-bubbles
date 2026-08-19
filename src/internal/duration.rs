@@ -113,3 +113,26 @@ fn fmt_int(digits: &mut Vec<char>, v: i128) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_duration_string_formats() {
+        assert_eq!(duration_string(Duration::ZERO), "0s");
+        assert_eq!(duration_string(Duration::from_nanos(500)), "500ns");
+        assert_eq!(duration_string(Duration::from_micros(12)), "12µs");
+        assert_eq!(duration_string(Duration::from_micros(1200)), "1.2ms");
+        assert_eq!(duration_string(Duration::from_millis(500)), "500ms");
+        assert_eq!(duration_string(Duration::from_secs(5)), "5s");
+        assert_eq!(
+            duration_string(Duration::from_secs(65) + Duration::from_millis(500)),
+            "1m5.5s"
+        );
+        assert_eq!(
+            duration_string(Duration::from_secs(3665) + Duration::from_micros(250000)),
+            "1h1m5.25s"
+        );
+    }
+}

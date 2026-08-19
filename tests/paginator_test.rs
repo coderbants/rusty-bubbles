@@ -90,11 +90,28 @@ fn test_paginator_lh_keys() {
 
 #[test]
 fn test_paginator_dots() {
-    let mut m: Model = paginator::new(vec![paginator::with_total_pages(5)]);
+    let mut m: Model = paginator::new(vec![
+        paginator::with_total_pages(5),
+        paginator::with_per_page(10),
+    ]);
+    m.total_pages = 5;
     m.type_ = Type::Dots;
-    assert_eq!(m.view(), "•○○○○");
+    m.active_dot = "*".to_string();
+    m.inactive_dot = ".".to_string();
+    m.arabic_format = "%d of %d".to_string();
+
+    assert_eq!(m.view(), "*....");
+    assert!(m.on_first_page());
+    assert!(!m.on_last_page());
+    assert_eq!(m.items_on_page(45), 10);
+
     m.next_page();
-    assert_eq!(m.view(), "○•○○○");
+    assert_eq!(m.view(), ".*...");
+    assert!(!m.on_first_page());
     m.prev_page();
-    assert_eq!(m.view(), "•○○○○");
+    assert_eq!(m.view(), "*....");
+
+    // Arabic view
+    m.type_ = Type::Arabic;
+    assert_eq!(m.view(), "1 of 5");
 }

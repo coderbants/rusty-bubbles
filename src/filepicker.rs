@@ -388,8 +388,8 @@ impl Model {
                 self.max_idx = self.height() - 1;
             } else if key::matches(k, std::slice::from_ref(&self.key_map.go_to_last)) {
                 self.selected = self.files.len().saturating_sub(1);
-                self.min_idx = self.files.len() - self.height();
-                self.max_idx = self.files.len() - 1;
+                self.min_idx = self.files.len().saturating_sub(self.height());
+                self.max_idx = self.files.len().saturating_sub(1);
             } else if key::matches(k, std::slice::from_ref(&self.key_map.down)) {
                 self.selected += 1;
                 if self.selected >= self.files.len() {
@@ -414,8 +414,8 @@ impl Model {
                 self.max_idx += self.height();
 
                 if self.max_idx >= self.files.len() {
-                    self.max_idx = self.files.len() - 1;
-                    self.min_idx = self.max_idx - self.height();
+                    self.max_idx = self.files.len().saturating_sub(1);
+                    self.min_idx = self.max_idx.saturating_sub(self.height());
                 }
             } else if key::matches(k, std::slice::from_ref(&self.key_map.page_up)) {
                 self.selected = self.selected.saturating_sub(self.height());
@@ -784,4 +784,135 @@ fn file_mode_string(md: &std::fs::Metadata) -> String {
 #[cfg(not(unix))]
 fn file_mode_string(_md: &std::fs::Metadata) -> String {
     "-rw-r--r--".to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusty_bubbletea::key::{Key, KeyMod, KeyPressMsg};
+
+    fn key_msg(k: &str) -> KeyPressMsg {
+        let code = match k {
+            "enter" => rusty_bubbletea::key::KEY_ENTER,
+            _ => k.chars().next().unwrap_or(' '),
+        };
+        KeyPressMsg(Key::new(code, k, KeyMod::default()))
+    }
+
+    #[test]
+    fn test_humanize_bytes() {
+        assert_eq!(humanize_bytes(0), "0 B");
+        assert_eq!(humanize_bytes(5), "5 B");
+        assert_eq!(humanize_bytes(1000), "1.0kB");
+        assert_eq!(humanize_bytes(1024), "1.0kB");
+        assert_eq!(humanize_bytes(1_500_000), "1.5MB");
+        assert_eq!(humanize_bytes(2_000_000_000), "2.0GB");
+    }
+
+    #[test]
+    fn test_filepicker_navigation_and_views() {
+        let mut fp = new();
+        fp.set_height(5);
+        assert_eq!(fp.height(), 5);
+        assert_eq!(fp.highlighted_path(), "");
+
+        // Empty directory view
+        let v = fp.view();
+        assert!(v.contains("Bummer. No Files Found."));
+
+        // Inject simulated files via ReadDirMsg
+        let entries = vec![
+            DirEntry {
+                name: "folder_a".to_string(),
+                is_dir: true,
+                size: 4096,
+                mode_string: "drwxr-xr-x".to_string(),
+                is_symlink: false,
+            },
+            DirEntry {
+                name: "file1.txt".to_string(),
+                is_dir: false,
+                size: 120,
+                mode_string: "-rw-r--r--".to_string(),
+                is_symlink: false,
+            },
+            DirEntry {
+                name: "file2.md".to_string(),
+                is_dir: false,
+                size: 4500,
+                mode_string: "-rw-r--r--".to_string(),
+                is_symlink: false,
+            },
+            DirEntry {
+                name: "sym_dir".to_string(),
+                is_dir: false,
+                size: 0,
+                mode_string: "lrwxrwxrwx".to_string(),
+                is_symlink: true,
+            },
+        ];
+
+        fp.update(&ReadDirMsg {
+            id: fp.id,
+            entries: entries.clone(),
+        });
+        assert_eq!(fp.files.len(), 4);
+        assert_eq!(fp.highlighted_path(), "./folder_a");
+
+        // Navigate down and up
+        fp.update(&key_msg("j"));
+        assert_eq!(fp.selected, 1);
+        assert_eq!(fp.highlighted_path(), "./file1.txt");
+
+        fp.update(&key_msg("k"));
+        assert_eq!(fp.selected, 0);
+
+        // Go to last / top
+        fp.update(&key_msg("G"));
+        assert_eq!(fp.selected, 3);
+
+        fp.update(&key_msg("g"));
+        assert_eq!(fp.selected, 0);
+
+        // Page down / up
+        fp.update(&key_msg("pgdown"));
+        fp.update(&key_msg("pgup"));
+
+        // Render populated view
+        let view_str = fp.view();
+        assert!(view_str.contains("folder_a"));
+        assert!(view_str.contains("file1.txt"));
+
+        // Selection checks: move to file1.txt (index 1) which is a file
+        fp.selected = 1;
+        let sel_msg = key_msg("enter");
+        fp.path = "file1.txt".to_string();
+        let (did_sel, path) = fp.did_select_file(&sel_msg);
+        assert!(did_sel);
+        assert_eq!(path, "file1.txt");
+
+        // Open directory (folder_a is index 0)
+        fp.selected = 0;
+        let open_cmd = fp.update(&key_msg("l"));
+        assert!(open_cmd.is_some());
+        assert_eq!(fp.current_directory, "./folder_a");
+
+        // Back key navigates to parent and pops stack
+        let back_cmd = fp.update(&key_msg("h"));
+        assert!(back_cmd.is_some());
+
+        // Show permissions and size
+        fp.show_permissions = true;
+        fp.show_size = true;
+        fp.update(&ReadDirMsg {
+            id: fp.id,
+            entries: entries.clone(),
+        });
+        let perm_view = fp.view();
+        assert!(perm_view.contains("-rw-r--r--"));
+        assert!(perm_view.contains("120B") || perm_view.contains("4.5kB"));
+
+        // Init returns read dir command
+        assert!(fp.init().is_some());
+    }
 }

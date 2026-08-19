@@ -34,3 +34,14 @@ pub fn write_all(s: &str) -> Result<(), String> {
         Err("could not write clipboard".to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clipboard_read_write() {
+        let _ = write_all("bubbles test clipboard");
+        let _ = read_all();
+    }
+}

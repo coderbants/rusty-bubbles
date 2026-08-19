@@ -334,3 +334,56 @@ pub fn new(opts: Vec<Option>) -> Model {
 
     m
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_spinner_model_and_presets() {
+        let mut m = new(vec![
+            with_spinner(mini_dot()),
+            with_style(rusty_lipgloss::new_style()),
+        ]);
+        assert_eq!(m.view(), "⠋");
+        assert!(format!("{m:?}").contains("spinner::Model"));
+
+        let tm = m.tick_msg();
+        assert_eq!(tm.id, m.id());
+
+        // Update with TickMsg
+        let cmd = m.update(&tm);
+        assert!(cmd.is_some());
+        assert_eq!(m.view(), "⠙");
+
+        // Stale tag ignored
+        let stale = m.update(&TickMsg {
+            time: SystemTime::now(),
+            id: m.id(),
+            tag: 999,
+        });
+        assert!(stale.is_none());
+
+        // Mismatched id ignored
+        let other_id = m.update(&TickMsg {
+            time: SystemTime::now(),
+            id: m.id() + 999,
+            tag: m.tag,
+        });
+        assert!(other_id.is_none());
+
+        // Exercise all spinner presets
+        let _ = line();
+        let _ = dot();
+        let _ = mini_dot();
+        let _ = jump();
+        let _ = pulse();
+        let _ = points();
+        let _ = globe();
+        let _ = moon();
+        let _ = monkey();
+        let _ = meter();
+        let _ = hamburger();
+        let _ = ellipsis();
+    }
+}

@@ -206,3 +206,80 @@ impl Model {
 fn tick(id: i32, tag: i32, d: Duration) -> Cmd {
     commands::tick(d, move |_| Some(Box::new(TickMsg { id, tag })))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_stopwatch_lifecycle() {
+        let mut m = new(vec![with_interval(Duration::from_millis(50))]);
+        assert_eq!(m.elapsed(), Duration::ZERO);
+        assert!(!m.running());
+        assert_eq!(m.view(), "0s");
+        assert!(format!("{m:?}").contains("stopwatch::Model"));
+
+        // Init / start
+        let cmd = m.init();
+        assert!(cmd.is_some());
+
+        // Update StartStopMsg
+        m.update(&StartStopMsg {
+            id: m.id(),
+            running: true,
+        });
+        assert!(m.running());
+
+        // Mismatched StartStopMsg ignored
+        m.update(&StartStopMsg {
+            id: m.id() + 999,
+            running: false,
+        });
+        assert!(m.running());
+
+        // TickMsg
+        let tick_cmd = m.update(&TickMsg {
+            id: m.id(),
+            tag: m.tag,
+        });
+        assert!(tick_cmd.is_some());
+        assert_eq!(m.elapsed(), Duration::from_millis(50));
+        assert_eq!(m.view(), "50ms");
+
+        // Stale tag ignored
+        let stale = m.update(&TickMsg {
+            id: m.id(),
+            tag: 999,
+        });
+        assert!(stale.is_none());
+
+        // Stop
+        let stop_cmd = m.stop();
+        assert!(stop_cmd.is_some());
+        m.update(&StartStopMsg {
+            id: m.id(),
+            running: false,
+        });
+        assert!(!m.running());
+
+        // Toggle from stopped starts
+        let toggle_cmd = m.toggle();
+        assert!(toggle_cmd.is_some());
+
+        // Toggle from running stops
+        m.running = true;
+        let toggle_cmd2 = m.toggle();
+        assert!(toggle_cmd2.is_some());
+
+        // Reset
+        let reset_cmd = m.reset();
+        assert!(reset_cmd.is_some());
+        m.update(&ResetMsg { id: m.id() });
+        assert_eq!(m.elapsed(), Duration::ZERO);
+
+        // Mismatched ResetMsg ignored
+        m.d = Duration::from_secs(10);
+        m.update(&ResetMsg { id: m.id() + 999 });
+        assert_eq!(m.elapsed(), Duration::from_secs(10));
+    }
+}
