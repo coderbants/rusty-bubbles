@@ -1,8 +1,8 @@
 <p align="center">
-    <a href="rusty-bubbles.png"><img src="rusty-bubbles.png" width="313" alt="Rusty Bubbles"></a><br>
+    <a href="https://raw.githubusercontent.com/coderbants/rusty-bubbles/dev/rusty-bubbles.png"><img src="https://raw.githubusercontent.com/coderbants/rusty-bubbles/dev/rusty-bubbles.png" width="313" alt="Rusty Bubbles"></a><br>
     <a href="https://crates.io/crates/rusty-bubbles"><img src="https://img.shields.io/crates/v/rusty-bubbles.svg" alt="crates.io"></a>
     <a href="https://github.com/coderbants/rusty-bubbles/actions"><img src="https://github.com/coderbants/rusty-bubbles/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
-    <a href="coverage.svg"><img src="coverage.svg" alt="coverage"></a>
+    <a href="https://raw.githubusercontent.com/coderbants/rusty-bubbles/dev/coverage.svg"><img src="https://raw.githubusercontent.com/coderbants/rusty-bubbles/dev/coverage.svg" alt="coverage"></a>
 
 </p>
 
