@@ -221,6 +221,15 @@ pub fn with_rows(rows: &[Row]) -> Option {
 /// The header consumes part of the requested height. Values smaller than the
 /// rendered header clamp the content viewport to zero instead of wrapping
 /// through usize arithmetic.
+///
+/// # Examples
+///
+/// ```
+/// use rusty_bubbles::table;
+///
+/// let model = table::new(vec![table::with_height(1)]);
+/// assert_eq!(model.height(), 0);
+/// ```
 pub fn with_height(h: usize) -> Option {
     Box::new(move |m: &mut Model| {
         let hh = rusty_lipgloss::size::height(&m.headers_view());
@@ -325,6 +334,15 @@ impl Model {
 
     /// UpdateViewport updates the list content based on the previously
     /// defined columns and rows.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.update_viewport();
+    /// ```
     pub fn update_viewport(&mut self) {
         let mut rendered_rows: Vec<String> = Vec::with_capacity(self.rows.len());
 
@@ -338,7 +356,7 @@ impl Model {
             self.cursor,
         );
         self.end = clamp(
-            self.cursor + self.viewport.height(),
+            self.cursor.saturating_add(self.viewport.height()),
             self.cursor,
             self.rows.len(),
         );
@@ -401,6 +419,15 @@ impl Model {
     /// The header consumes part of the requested height. Values smaller than
     /// the rendered header clamp the content viewport to zero instead of
     /// wrapping through usize arithmetic.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.set_height(1);
+    /// ```
     pub fn set_height(&mut self, h: usize) {
         let hh = rusty_lipgloss::size::height(&self.headers_view());
         self.viewport.set_height(h.saturating_sub(hh));
@@ -430,6 +457,15 @@ impl Model {
 
     /// MoveUp moves the selection up by any number of rows.
     /// It can not go above the first row.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.move_up(usize::MAX);
+    /// ```
     pub fn move_up(&mut self, n: usize) {
         // Upstream uses signed ints and clamps to 0; saturating subtraction
         // mirrors that without overflowing.
@@ -463,6 +499,15 @@ impl Model {
 
     /// MoveDown moves the selection down by any number of rows.
     /// It can not go below the last row.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.move_down(usize::MAX);
+    /// ```
     pub fn move_down(&mut self, n: usize) {
         self.cursor = clamp(
             self.cursor.saturating_add(n),

@@ -681,7 +681,12 @@ fn test_ragged_rows_render_against_declared_columns() {
     ];
     let rows = vec![
         vec!["a".to_string()],
-        vec!["b".to_string(), "c".to_string(), "surplus".to_string()],
+        vec![
+            "b".to_string(),
+            "c".to_string(),
+            "d".to_string(),
+            "surplus".to_string(),
+        ],
     ];
 
     let m = table::new(vec![
@@ -692,7 +697,12 @@ fn test_ragged_rows_render_against_declared_columns() {
     ]);
 
     assert_eq!(ansi_strip(&rendered_row(&m)), "a           ");
-    assert!(!ansi_strip(&m.view()).contains("surplus"));
+
+    let rendered = ansi_strip(&m.view());
+    assert!(rendered.contains('b'));
+    assert!(rendered.contains('c'));
+    assert!(rendered.contains('d'));
+    assert!(!rendered.contains("surplus"));
 }
 
 #[test]
@@ -738,6 +748,17 @@ fn test_navigation_saturates_at_cursor_bounds() {
     assert_eq!(m.cursor(), 0);
     m.move_down(usize::MAX);
     assert_eq!(m.cursor(), rows.len() - 1);
+
+    let mut maximum_viewport = table::new(vec![
+        table::with_columns(&[table::Column {
+            title: "value".to_string(),
+            width: 5,
+        }]),
+        table::with_rows(&rows),
+        table::with_height(usize::MAX),
+    ]);
+    maximum_viewport.move_down(2);
+    assert_eq!(maximum_viewport.cursor(), rows.len() - 1);
 }
 
 #[test]

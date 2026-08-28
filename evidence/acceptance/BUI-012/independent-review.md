@@ -33,8 +33,9 @@ The rusty-bubbles table now materializes every declared column deterministically
 - `cargo fmt --all --check`: passed.
 - `cargo clippy --all-targets -- -D warnings`: passed.
 - `cargo doc --no-deps --all-features`: passed without warnings.
-- `rustdoc --test docs/src/lib.rs`: 1 passed.
+- `cargo test --doc table:: --no-fail-fast`: 6 table doctests passed, including the changed public operations.
+- `cargo build --lib`, followed by `BUI012_DOC_RLIB=$(find target/debug/deps -maxdepth 1 -type f -name 'librusty_bubbles-*.rlib' -print -quit); rustdoc --test docs/src/lib.rs --edition=2021 --extern rusty_bubbles="$BUI012_DOC_RLIB" -L dependency=target/debug/deps`: 1 passed.
 - `scripts/verify_mapping.sh`: passed; the optional local `upstream-go/` checkout was absent as documented by the script.
-- `yq eval '.' .github/workflows/ci.yml`: passed; the coverage badge publication is guarded to push events on `dev` and uses `HEAD:dev [skip ci]`.
+- `yq '.' .github/workflows/ci.yml`: passed; the coverage badge publication is guarded to push events on `dev` and uses `HEAD:dev [skip ci]`.
 
 This packet is implementation evidence, not an approval or merge authorization. The final independent review, exact-head protected CI, and post-merge absorb transition remain owned by the Mutate lifecycle.
