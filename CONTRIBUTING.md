@@ -56,6 +56,7 @@ cargo test --all-targets
 
    ```sh
    cargo test --all-targets
+   ./scripts/test-release-guards.sh
    cargo doc --no-deps           # rustdoc coverage
    ```
 
@@ -74,20 +75,9 @@ cargo test --all-targets
 
 ## Versioning
 
-Every release that matches an upstream version uses the upstream `MAJOR.MINOR.PATCH` plus a
-fourth dot-separated iteration number that internally tracks which deployed release of this
-port it is for that upstream version:
-
-- `v2.1.0.0` — first port release of upstream `v2.1.0`
-- `v2.1.0.1` — a hotfix iteration for `v2.1.0` (bug fix released without an upstream
-  version bump)
-
-The iteration increments whenever we publish a new release of our port without an upstream
-version bump (e.g. a bug fix that upstream has not yet released). The git tag and GitHub
-release carry the full four-part version (`v2.1.0.1`). `Cargo.toml` keeps the upstream
-`X.Y.Z` (`2.1.0`), since crates.io only accepts `MAJOR.MINOR.PATCH`; iteration hotfixes
-publish under the same `X.Y.Z` on crates.io, replacing the previous deployment (iterations
-are only used for bug fixes, so the contents differ only in fixes).
+Every release uses the tracked upstream version exactly. There is no fourth-part iteration or
+republishing of an existing crates.io version; wait for an upstream version change before
+creating another release tag.
 
 ## Contribution guidelines
 
