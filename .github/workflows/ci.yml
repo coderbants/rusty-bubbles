@@ -119,8 +119,6 @@ jobs:
     name: Coverage
     runs-on: ubuntu-latest
     needs: gate
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -189,6 +187,31 @@ jobs:
         run: |
           cargo tarpaulin --all-features --out xml --output-dir target/tarpaulin -- --test-threads=1 2>&1 | tee /tmp/tarpaulin.log
 
+      - name: Upload coverage report for dev badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/tarpaulin/cobertura.xml
+          if-no-files-found: error
+          retention-days: 1
+
+  coverage-badge:
+    name: Update coverage badge
+    runs-on: ubuntu-latest
+    needs: coverage
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: target/tarpaulin
       - name: Write coverage badge in place
         run: |
           raw="$(grep -oE 'line-rate="[0-9.]+' target/tarpaulin/cobertura.xml | head -1 | grep -oE '[0-9.]+')"
@@ -205,12 +228,12 @@ jobs:
           esac
           curl -sS "https://img.shields.io/badge/coverage-${pct}%25-${color}.svg" -o coverage.svg
           # Commit the badge in place only when it changed (git diff ignores
-          # untracked files, so use status), so the push cannot re-trigger CI
-          # indefinitely.
+          # untracked files, so use status). The skip marker prevents this
+          # trusted publication commit from starting another CI run.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain -- coverage.svg)" ]; then
             git add coverage.svg
-            git commit -q -m "docs: update coverage badge ($pct%)"
-            git push -q origin dev
+            git commit -q -m "docs: update coverage badge ($pct%) [skip ci]"
+            git push -q origin HEAD:dev
           fi

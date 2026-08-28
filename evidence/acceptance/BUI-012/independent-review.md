@@ -8,6 +8,7 @@ The rusty-bubbles table now materializes every declared column deterministically
 
 ## Scope
 
+- `.github/workflows/ci.yml`: separates PR coverage validation from trusted `dev` badge publication and prevents the PR checkout from attempting to push `dev`.
 - `Cargo.toml`: declares the standalone Cargo resolver and the compiler floor used by the candidate.
 - `src/lib.rs`: documents the crate facade as a user-facing component collection.
 - `src/table.rs`: hardens outer-height arithmetic, cursor/viewport movement, and ragged-row rendering.
@@ -34,5 +35,6 @@ The rusty-bubbles table now materializes every declared column deterministically
 - `cargo doc --no-deps --all-features`: passed without warnings.
 - `rustdoc --test docs/src/lib.rs`: 1 passed.
 - `scripts/verify_mapping.sh`: passed; the optional local `upstream-go/` checkout was absent as documented by the script.
+- `yq eval '.' .github/workflows/ci.yml`: passed; the coverage badge publication is guarded to push events on `dev` and uses `HEAD:dev [skip ci]`.
 
 This packet is implementation evidence, not an approval or merge authorization. The final independent review, exact-head protected CI, and post-merge absorb transition remain owned by the Mutate lifecycle.
