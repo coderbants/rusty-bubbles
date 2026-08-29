@@ -7,6 +7,33 @@
 //! A simple table component for Bubble Tea applications.
 //! </public-docs>
 
+//!
+//! <user-docs>
+//! # Table
+//!
+//! `table::Model` renders a typed collection of rows against declared
+//! columns. Rows shorter than the column list render empty cells; surplus row
+//! values are ignored, so input shape cannot change the rendered table or
+//! panic the renderer.
+//!
+//! Configure dimensions with `with_width` and `with_height`, provide
+//! `Column` definitions with `with_columns`, and provide `Row` values
+//! with `with_rows`. Cursor movement and viewport updates saturate at their
+//! valid bounds, including zero-height and maximum-input cases.
+//!
+//! ```rust
+//! use rusty_bubbles::table::{self, Column};
+//!
+//! let model = table::new(vec![
+//!     table::with_width(16),
+//!     table::with_columns(&[Column { title: "Name".into(), width: 8 }]),
+//!     table::with_rows(&[vec!["Bubbles".into()]]),
+//! ]);
+//! assert_eq!(model.selected_row().unwrap()[0], "Bubbles");
+//! assert!(model.view().contains("Bubbles"));
+//! ```
+//! </user-docs>
+
 use crate::help;
 use crate::key::{self, Binding};
 use crate::viewport;

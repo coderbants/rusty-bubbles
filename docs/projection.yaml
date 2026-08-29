@@ -1,0 +1,6 @@
+schemaVersion: 1
+projection:
+  audience: user
+  source: docs/src/lib.rs
+  module: src/table.rs
+  destination: rusty-bubbles
