@@ -18,7 +18,7 @@ grep -Fxq '//! <user-docs>' docs/src/lib.rs
 grep -Fxq '//! </user-docs>' docs/src/lib.rs
 grep -Fq 'rusty_bubbles::table' docs/src/lib.rs
 
-target_dir="${CARGO_TARGET_DIR:-target}"
+build_dir="${CARGO_BUILD_BUILD_DIR:-${CARGO_TARGET_DIR:-target}}"
 BUI012_DOC_RLIB="$(
   cargo build --lib --message-format=json-render-diagnostics |
     node -e '
@@ -41,6 +41,6 @@ test -n "$BUI012_DOC_RLIB"
 rustdoc --test docs/src/lib.rs \
   --edition=2021 \
   --extern "rusty_bubbles=$BUI012_DOC_RLIB" \
-  -L "dependency=$target_dir/debug/deps"
+  -L "dependency=$build_dir/debug/deps"
 
 echo "OK: docs projection is mapped and compiled"
