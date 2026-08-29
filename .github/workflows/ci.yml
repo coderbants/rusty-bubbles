@@ -122,6 +122,10 @@ jobs:
         run: cargo build --all-targets
       - name: Docgen
         run: cargo doc --no-deps
+      - name: verify_docs_projection
+        run: bash ./scripts/verify_docs_projection.sh
+      - name: Table doctests
+        run: cargo test --doc table --no-fail-fast
       - name: Test (all targets, all integration tests)
         run: cargo test --all-targets
       - name: verify_mapping

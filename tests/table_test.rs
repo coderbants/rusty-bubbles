@@ -428,13 +428,10 @@ fn test_cursor_navigation() {
     assert_eq!(t.cursor(), 3, "want 3, got {}", t.cursor());
 
     // MoveUp with overflow: the Go test moves up 5 rows from row 3, which
-    // clamps to row 0. NOTE: the Rust `move_up` computes `cursor - n` with
-    // `usize` arithmetic and panics on underflow when `n > cursor`, so we
-    // move up only as far as the cursor (the clamp-to-top behavior is the
-    // same as Go's for `n >= cursor`).
+    // clamps to row 0.
     let mut t = table::new(vec![table::with_columns(&cols), table::with_rows(&rows4)]);
     t.set_cursor(3);
-    t.move_up(3);
+    t.move_up(5);
     assert_eq!(t.cursor(), 0, "want 0, got {}", t.cursor());
 
     // Blur does not stop movement
@@ -664,4 +661,128 @@ fn test_table_options_and_navigation_update() {
     assert!(!m.focused());
     m.focus();
     assert!(m.focused());
+}
+
+#[test]
+fn test_ragged_rows_render_against_declared_columns() {
+    let columns = vec![
+        table::Column {
+            title: "one".to_string(),
+            width: 3,
+        },
+        table::Column {
+            title: "two".to_string(),
+            width: 3,
+        },
+        table::Column {
+            title: "three".to_string(),
+            width: 3,
+        },
+    ];
+    let rows = vec![
+        vec!["a".to_string()],
+        vec![
+            "b".to_string(),
+            "c".to_string(),
+            "d".to_string(),
+            "surplus".to_string(),
+        ],
+    ];
+
+    let m = table::new(vec![
+        table::with_width(12),
+        table::with_columns(&columns),
+        table::with_rows(&rows),
+        table::with_styles(plain_styles()),
+    ]);
+
+    assert_eq!(ansi_strip(&rendered_row(&m)), "a           ");
+
+    let rendered = ansi_strip(&m.view());
+    assert!(rendered.contains('b'));
+    assert!(rendered.contains('c'));
+    assert!(rendered.contains('d'));
+    assert!(!rendered.contains("surplus"));
+}
+
+#[test]
+fn test_height_is_saturating_at_the_boundary() {
+    let columns = vec![table::Column {
+        title: "header".to_string(),
+        width: 6,
+    }];
+
+    let mut before_columns = table::new(vec![
+        table::with_height(0),
+        table::with_columns(&columns),
+        table::with_styles(plain_styles()),
+    ]);
+    let after_columns = table::new(vec![
+        table::with_columns(&columns),
+        table::with_height(0),
+        table::with_styles(plain_styles()),
+    ]);
+
+    assert_eq!(before_columns.height(), 0);
+    assert_eq!(after_columns.height(), 0);
+    before_columns.set_height(0);
+    assert_eq!(before_columns.height(), 0);
+}
+#[test]
+fn test_navigation_saturates_at_cursor_bounds() {
+    let rows = vec![
+        vec!["one".to_string()],
+        vec!["two".to_string()],
+        vec!["three".to_string()],
+    ];
+    let mut m = table::new(vec![
+        table::with_columns(&[table::Column {
+            title: "value".to_string(),
+            width: 5,
+        }]),
+        table::with_rows(&rows),
+    ]);
+
+    m.set_cursor(1);
+    m.move_up(usize::MAX);
+    assert_eq!(m.cursor(), 0);
+    m.move_down(usize::MAX);
+    assert_eq!(m.cursor(), rows.len() - 1);
+
+    let mut maximum_viewport = table::new(vec![
+        table::with_columns(&[table::Column {
+            title: "value".to_string(),
+            width: 5,
+        }]),
+        table::with_rows(&rows),
+        table::with_height(usize::MAX),
+    ]);
+    maximum_viewport.move_down(2);
+    assert_eq!(maximum_viewport.cursor(), rows.len() - 1);
+}
+
+#[test]
+fn test_zero_height_navigation_is_safe() {
+    let rows = vec![
+        vec!["one".to_string()],
+        vec!["two".to_string()],
+        vec!["three".to_string()],
+    ];
+    let mut m = table::new(vec![
+        table::with_columns(&[table::Column {
+            title: "value".to_string(),
+            width: 5,
+        }]),
+        table::with_rows(&rows),
+        table::with_height(0),
+    ]);
+
+    m.move_down(usize::MAX);
+    m.move_up(usize::MAX);
+    m.goto_bottom();
+    m.goto_top();
+
+    assert_eq!(m.height(), 0);
+    assert_eq!(m.cursor(), 0);
+    assert_eq!(m.view().lines().count(), 1);
 }

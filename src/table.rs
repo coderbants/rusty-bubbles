@@ -7,6 +7,33 @@
 //! A simple table component for Bubble Tea applications.
 //! </public-docs>
 
+//!
+//! <user-docs>
+//! # Table
+//!
+//! `table::Model` renders a typed collection of rows against declared
+//! columns. Rows shorter than the column list render empty cells; surplus row
+//! values are ignored, so input shape cannot change the rendered table or
+//! panic the renderer.
+//!
+//! Configure dimensions with `with_width` and `with_height`, provide
+//! `Column` definitions with `with_columns`, and provide `Row` values
+//! with `with_rows`. Cursor movement and viewport updates saturate at their
+//! valid bounds, including zero-height and maximum-input cases.
+//!
+//! ```rust
+//! use rusty_bubbles::table::{self, Column};
+//!
+//! let model = table::new(vec![
+//!     table::with_width(16),
+//!     table::with_columns(&[Column { title: "Name".into(), width: 8 }]),
+//!     table::with_rows(&[vec!["Bubbles".into()]]),
+//! ]);
+//! assert_eq!(model.selected_row().unwrap()[0], "Bubbles");
+//! assert!(model.view().contains("Bubbles"));
+//! ```
+//! </user-docs>
+
 use crate::help;
 use crate::key::{self, Binding};
 use crate::viewport;
@@ -216,11 +243,24 @@ pub fn with_rows(rows: &[Row]) -> Option {
     })
 }
 
-/// WithHeight sets the height of the table.
+/// WithHeight sets the outer height of the table.
+///
+/// The header consumes part of the requested height. Values smaller than the
+/// rendered header clamp the content viewport to zero instead of wrapping
+/// through usize arithmetic.
+///
+/// # Examples
+///
+/// ```
+/// use rusty_bubbles::table;
+///
+/// let model = table::new(vec![table::with_height(1)]);
+/// assert_eq!(model.height(), 0);
+/// ```
 pub fn with_height(h: usize) -> Option {
     Box::new(move |m: &mut Model| {
         let hh = rusty_lipgloss::size::height(&m.headers_view());
-        m.viewport.set_height(h - hh);
+        m.viewport.set_height(h.saturating_sub(hh));
     })
 }
 
@@ -321,6 +361,15 @@ impl Model {
 
     /// UpdateViewport updates the list content based on the previously
     /// defined columns and rows.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.update_viewport();
+    /// ```
     pub fn update_viewport(&mut self) {
         let mut rendered_rows: Vec<String> = Vec::with_capacity(self.rows.len());
 
@@ -334,7 +383,7 @@ impl Model {
             self.cursor,
         );
         self.end = clamp(
-            self.cursor + self.viewport.height(),
+            self.cursor.saturating_add(self.viewport.height()),
             self.cursor,
             self.rows.len(),
         );
@@ -392,10 +441,23 @@ impl Model {
         self.update_viewport();
     }
 
-    /// SetHeight sets the height of the viewport of the table.
+    /// SetHeight sets the outer height of the table.
+    ///
+    /// The header consumes part of the requested height. Values smaller than
+    /// the rendered header clamp the content viewport to zero instead of
+    /// wrapping through usize arithmetic.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.set_height(1);
+    /// ```
     pub fn set_height(&mut self, h: usize) {
         let hh = rusty_lipgloss::size::height(&self.headers_view());
-        self.viewport.set_height(h - hh);
+        self.viewport.set_height(h.saturating_sub(hh));
         self.update_viewport();
     }
 
@@ -422,6 +484,15 @@ impl Model {
 
     /// MoveUp moves the selection up by any number of rows.
     /// It can not go above the first row.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.move_up(usize::MAX);
+    /// ```
     pub fn move_up(&mut self, n: usize) {
         // Upstream uses signed ints and clamps to 0; saturating subtraction
         // mirrors that without overflowing.
@@ -431,13 +502,23 @@ impl Model {
             self.rows.len().saturating_sub(1),
         );
 
+        if self.viewport.height() == 0 {
+            self.viewport.set_y_offset(0);
+            self.update_viewport();
+            return;
+        }
+
         let mut offset = self.viewport.y_offset();
         if self.start == 0 {
             offset = clamp(offset, 0, self.cursor);
         } else if self.start < self.viewport.height() {
-            offset = clamp(clamp(offset + n, 0, self.cursor), 0, self.viewport.height());
+            offset = clamp(
+                clamp(offset.saturating_add(n), 0, self.cursor),
+                0,
+                self.viewport.height(),
+            );
         } else if offset >= 1 {
-            offset = clamp(offset + n, 1, self.viewport.height());
+            offset = clamp(offset.saturating_add(n), 1, self.viewport.height());
         }
         self.viewport.set_y_offset(offset);
         self.update_viewport();
@@ -445,19 +526,37 @@ impl Model {
 
     /// MoveDown moves the selection down by any number of rows.
     /// It can not go below the last row.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rusty_bubbles::table;
+    ///
+    /// let mut model = table::new(vec![]);
+    /// model.move_down(usize::MAX);
+    /// ```
     pub fn move_down(&mut self, n: usize) {
-        self.cursor = clamp(self.cursor + n, 0, self.rows.len().saturating_sub(1));
+        self.cursor = clamp(
+            self.cursor.saturating_add(n),
+            0,
+            self.rows.len().saturating_sub(1),
+        );
         self.update_viewport();
+
+        if self.viewport.height() == 0 {
+            self.viewport.set_y_offset(0);
+            return;
+        }
 
         let mut offset = self.viewport.y_offset();
         if self.end == self.rows.len() && offset > 0 {
-            offset = clamp(offset - n, 1, self.viewport.height());
+            offset = clamp(offset.saturating_sub(n), 1, self.viewport.height());
         } else if self.cursor > (self.end - self.start) / 2 && offset > 0 {
-            offset = clamp(offset - n, 1, self.cursor);
+            offset = clamp(offset.saturating_sub(n), 1, self.cursor);
         } else if offset > 1 {
             // no-op
-        } else if self.cursor > offset + self.viewport.height() - 1 {
-            offset = clamp(offset + 1, 0, 1);
+        } else if self.cursor > offset.saturating_add(self.viewport.height().saturating_sub(1)) {
+            offset = clamp(offset.saturating_add(1), 0, 1);
         }
         self.viewport.set_y_offset(offset);
     }
@@ -509,16 +608,16 @@ impl Model {
 
     fn render_row(&self, r: usize) -> String {
         let mut s: Vec<String> = Vec::with_capacity(self.cols.len());
-        for (i, value) in self.rows[r].iter().enumerate() {
-            if self.cols[i].width == 0 {
+        for (i, col) in self.cols.iter().enumerate() {
+            if col.width == 0 {
                 continue;
             }
             let style = rusty_lipgloss::new_style()
-                .width(self.cols[i].width)
-                .max_width(self.cols[i].width)
+                .width(col.width)
+                .max_width(col.width)
                 .inline(true);
-            let rendered_cell =
-                style.render(&rusty_x_ansi::truncate(value, self.cols[i].width, "…"));
+            let value = self.rows[r].get(i).map(String::as_str).unwrap_or("");
+            let rendered_cell = style.render(&rusty_x_ansi::truncate(value, col.width, "…"));
             s.push(self.styles.cell.clone().render(&rendered_cell));
         }
 

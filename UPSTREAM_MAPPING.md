@@ -27,7 +27,7 @@
 | `progress/progress.go` | `src/progress.rs` | Progress bar with spring animation |
 | `spinner/spinner.go` | `src/spinner.rs` | Spinner component + presets |
 | `stopwatch/stopwatch.go` | `src/stopwatch.rs` | Stopwatch component |
-| `table/table.go` | `src/table.rs` | Table component |
+| `table/table.go` | `src/table.rs` | Table component; Rust boundary handling keeps declared columns rectangular for ragged rows and clamps outer-height arithmetic safely |
 | `textarea/textarea.go` | `src/textarea.rs` | Multi-line text area |
 | `textinput/textinput.go` | `src/textinput.rs` | Single-line text input |
 | `textinput/styles.go` | `src/textinput.rs` | Text input styles |
@@ -96,6 +96,10 @@ dependency tree as upstream keeps them out of the bubbletea library module):
   `viewport.longestLineWidth`, `m.setInitialValues()`, `statusView()`) assert through
   the public API (documented at each call site).
 - `viewport::scroll_left` uses `saturating_sub` (upstream int semantics clamp to 0).
+- `table::Model` uses saturating outer-height arithmetic and reapplies the
+  declared table shape during rendering: missing cells are empty and surplus
+  cells are ignored, while cursor and viewport movement remains safe for zero
+  and maximum inputs.
 
 ## Dependency Manifest
 

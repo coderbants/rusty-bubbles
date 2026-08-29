@@ -1,7 +1,7 @@
 //! Cleanroom Rust port of upstream Go source file: `bubbles.go`
 //! Upstream Target Tag / Version: `v2.1.0`
 //!
-//! <public-docs>
+//! <user-docs>
 //! # Bubbles
 //!
 //! Components for Bubble Tea applications. These components are used in
@@ -23,7 +23,14 @@
 //! - [`textarea`] — multi-line text area component
 //! - [`filepicker`] — file picker component
 //!
-//! </public-docs>
+//! Each component exposes typed state and deterministic model/update/view
+//! operations. Components remain independent so applications can compose them
+//! without taking ownership of a downstream event loop.
+//! </user-docs>
+//!
+//! Internal maintainer note: this root module is the public facade. Keep the
+//! module list and the user-facing documentation projection synchronized when
+//! adding or changing a component.
 
 pub mod cursor;
 pub mod filepicker;
