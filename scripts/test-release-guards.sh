@@ -66,6 +66,7 @@ check_sibling_refs() {
 
 check_all_pinned_actions
 check_sibling_refs
+scripts/test-release-admission.sh
 
 if grep -n 'workflow_dispatch' .github/workflows/publish.yml >/dev/null; then
   report "publish workflow must not expose a manual dispatch path"
