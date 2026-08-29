@@ -1,9 +1,10 @@
 # BUI-012 Implementation Evidence
 
 Status: current exact-head implementation evidence for candidate
-`2e85a43cd03b95444a86db90810da10b7d7248d8`; R-01 replay, R-02 replay, and
+`41cc48b161060842b99a6bd2048de59cbcb011ed`; R-01 replay, R-02 replay, and
 merge authorization remain lifecycle gates. This packet is not merge
-authorization.
+authorization. The current head is an evidence-only descendant of the
+material CI repair `2e85a43cd03b95444a86db90810da10b7d7248d8`.
 
 ## Historical boundary
 
@@ -61,7 +62,7 @@ configuration are imported base changes, not additional BUI-012-owned edits.
 - `scripts/verify_mapping.sh`: passed in protected CI; the optional local `upstream-go/` checkout is absent as documented by the script.
 - `./scripts/test-release-guards.sh`: passed.
 - `yq '.' .github/workflows/ci.yml`: passed.
-- Protected CI run [`33236464259`](https://github.com/coderbants/rusty-bubbles/actions/runs/33236464259) passed on exact head `2e85a43cd03b95444a86db90810da10b7d7248d8`: version gate, lint/build/docs/tests, documentation projection, seven table doctests, mapping, release guards, and coverage all passed. The PR-only badge-update job was skipped as designed.
+- Protected CI run [`33236603654`](https://github.com/coderbants/rusty-bubbles/actions/runs/33236603654) passed on exact head `41cc48b161060842b99a6bd2048de59cbcb011ed`: version gate, lint/build/docs/tests, documentation projection, seven table doctests, mapping, release guards, and coverage all passed. The PR-only badge-update job was skipped as designed.
 
 The repository-wide `cargo test --doc --no-fail-fast` run remains a known
 out-of-scope baseline failure in the unchanged `src/key.rs` example/API
@@ -75,8 +76,9 @@ add a complete `<user-docs>` contract plus exact-head projection proof. R-01
 replay passed with no findings on `8f21bb1`. R-02 then identified
 `TST-R02-001`: the module-level table doctest was not protected by CI. The
 protected `cargo test --doc table --no-fail-fast` step now covers all seven
-table doctests on `2e85a43`; the repaired head must be sent back to the Testing
-Specialist for confirmation.
+table doctests on `2e85a43`, and the exact current head `41cc48b` has a passing
+protected rerun; it must now be sent back to the Testing Specialist for
+confirmation.
 
 The final independent review, exact-head protected CI, and post-merge absorb
 transition remain owned by the Mutate lifecycle.
