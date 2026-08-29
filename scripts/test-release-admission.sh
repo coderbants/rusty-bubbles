@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Offline regression tests for the fail-closed ruleset predicates. The live
-# admission script remains responsible for fetching the authoritative ruleset
-# detail records and checking the tag, ancestry, and CI evidence.
+# admission job fetches authoritative ruleset detail records; the verification
+# script only validates the hash-bound attestation and checks tag, ancestry,
+# and CI evidence.
 
 set -euo pipefail
 
@@ -28,6 +29,39 @@ assert_admitted() {
     exit 1
   fi
 }
+
+attestation_dir="$(mktemp -d)"
+trap 'rm -rf "${attestation_dir}"' EXIT
+attestation_file="${attestation_dir}/ruleset-attestation.json"
+export GITHUB_REPOSITORY="coderbants/rusty-bubbles"
+export GITHUB_SHA="0123456789abcdef0123456789abcdef01234567"
+export GITHUB_RUN_ID="12345"
+jq -n \
+  --arg repository "${GITHUB_REPOSITORY}" \
+  --arg commit "${GITHUB_SHA}" \
+  --arg workflow_run_id "${GITHUB_RUN_ID}" \
+  '{schema_version: 1, source: "github-ruleset-detail-attestation", repository: $repository, commit: $commit, workflow_run_id: $workflow_run_id, rulesets: []}' \
+  >"${attestation_file}"
+export RULESET_ATTESTATION_FILE="${attestation_file}"
+export RULESET_ATTESTATION_SHA256="$(sha256sum "${attestation_file}" | awk '{print $1}')"
+if ! rulesets_from_attestation >/dev/null; then
+  echo "ERROR: a correctly bound ruleset attestation must be admitted" >&2
+  exit 1
+fi
+
+export RULESET_ATTESTATION_SHA256="not-the-file-digest"
+if rulesets_from_attestation >/dev/null; then
+  echo "ERROR: an attestation with a digest mismatch must be rejected" >&2
+  exit 1
+fi
+
+jq '.workflow_run_id = "different-run"' "${attestation_file}" >"${attestation_file}.wrong-run"
+export RULESET_ATTESTATION_FILE="${attestation_file}.wrong-run"
+export RULESET_ATTESTATION_SHA256="$(sha256sum "${RULESET_ATTESTATION_FILE}" | awk '{print $1}')"
+if rulesets_from_attestation >/dev/null; then
+  echo "ERROR: an attestation for a different workflow run must be rejected" >&2
+  exit 1
+fi
 
 missing_bypass_dev="$(jq -n '{
   enforcement: "active",

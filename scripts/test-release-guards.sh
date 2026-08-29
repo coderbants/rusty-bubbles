@@ -106,9 +106,52 @@ verify_job="$(awk '
   in_job && /^  [A-Za-z0-9_-]+:/ && $0 !~ /^  verify:/ { exit }
   in_job { print }
 ' .github/workflows/publish.yml)"
+admit_job="$(awk '
+  /^  admit:/ { in_job=1 }
+  in_job && /^  [A-Za-z0-9_-]+:/ && $0 !~ /^  admit:/ { exit }
+  in_job { print }
+' .github/workflows/publish.yml)"
 
 if [[ "${verify_job}" == *"contents: write"* || "${verify_job}" == *"CARGO_REGISTRY_TOKEN"* ]]; then
   report "secretless verification job must not receive write permission or registry credentials"
+fi
+
+if [[ "${admit_job}" != *"release-admission"* ||
+      "${admit_job}" != *"RULESET_ADMISSION_TOKEN"* ||
+      "${admit_job}" != *"gh api"* ||
+      "${admit_job}" != *"rulesets"* ||
+      "${admit_job}" != *"actions/upload-artifact@"* ]]; then
+  report "ruleset admission must use the protected environment, dedicated token, authoritative API, and immutable artifact upload"
+fi
+
+if [[ "${admit_job}" == *"actions/checkout@"* ||
+      "${admit_job}" == *"cargo test"* ||
+      "${admit_job}" == *"cargo build"* ||
+      "${admit_job}" == *"cargo clippy"* ||
+      "${admit_job}" == *"CARGO_REGISTRY_TOKEN"* ||
+      "${admit_job}" == *"contents: write"* ]]; then
+  report "ruleset admission must not execute repository code or receive build/repository-write credentials"
+fi
+
+if [[ "${verify_job}" != *"needs: admit"* ||
+      "${verify_job}" != *"RULESET_ATTESTATION_FILE"* ||
+      "${verify_job}" != *"RULESET_ATTESTATION_SHA256"* ||
+      "${verify_job}" != *"actions/download-artifact@"* ]]; then
+  report "read-only verification must consume the exact trusted ruleset attestation artifact"
+fi
+
+if [[ "${verify_job}" == *"RULESET_ADMISSION_TOKEN"* ]]; then
+  report "read-only verification must not receive the privileged ruleset admission token"
+fi
+
+if grep -nF 'gh api "repos/${GITHUB_REPOSITORY}/rulesets' scripts/verify_release_admission.sh >/dev/null; then
+  report "read-only release verification must not fetch repository rulesets directly"
+fi
+
+if ! grep -n 'rulesets_from_attestation' scripts/verify_release_admission.sh >/dev/null ||
+   ! grep -n 'sha256sum' scripts/verify_release_admission.sh >/dev/null ||
+   ! grep -n 'workflow_run_id' scripts/verify_release_admission.sh >/dev/null; then
+  report "release verification must validate a hash-bound, run-bound ruleset attestation"
 fi
 
 if [[ "${publish_job}" != *"contents: write"* || "${publish_job}" != *"needs: verify"* ]]; then

@@ -2,8 +2,10 @@
 
 # Fail-closed admission checks for the tag-triggered publication workflow.
 # This script runs in the secretless verification job with a read-only
-# GitHub token. Publication is not admitted from an arbitrary tag, an
-# unverified commit, or an unprotected ref.
+# GitHub token and consumes a hash-bound trusted ruleset attestation. The
+# privileged admission job is the only stage that fetches ruleset details.
+# Publication is not admitted from an arbitrary tag, an unverified commit, or
+# an unprotected ref.
 
 set -euo pipefail
 
@@ -40,11 +42,45 @@ rulesets_admit_tag() {
   ' >/dev/null
 }
 
+rulesets_from_attestation() {
+  : "${RULESET_ATTESTATION_FILE:?RULESET_ATTESTATION_FILE is required}"
+  : "${RULESET_ATTESTATION_SHA256:?RULESET_ATTESTATION_SHA256 is required}"
+  if [[ ! -f "${RULESET_ATTESTATION_FILE}" ]]; then
+    echo "ERROR: trusted ruleset attestation is missing; refusing publication" >&2
+    return 1
+  fi
+
+  local actual_sha256
+  actual_sha256="$(sha256sum "${RULESET_ATTESTATION_FILE}" | awk '{print $1}')"
+  if [[ "${actual_sha256}" != "${RULESET_ATTESTATION_SHA256}" ]]; then
+    echo "ERROR: trusted ruleset attestation digest mismatch; refusing publication" >&2
+    return 1
+  fi
+
+  if ! jq -e \
+    --arg repository "${GITHUB_REPOSITORY}" \
+    --arg commit "${GITHUB_SHA}" \
+    --arg workflow_run_id "${GITHUB_RUN_ID}" '
+      .schema_version == 1
+      and .source == "github-ruleset-detail-attestation"
+      and .repository == $repository
+      and .commit == $commit
+      and .workflow_run_id == $workflow_run_id
+      and (.rulesets | type == "array")
+    ' "${RULESET_ATTESTATION_FILE}" >/dev/null; then
+    echo "ERROR: trusted ruleset attestation is not bound to this repository/run/commit; refusing publication" >&2
+    return 1
+  fi
+
+  jq -c '.rulesets' "${RULESET_ATTESTATION_FILE}"
+}
+
 main() {
   : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
   : "${GITHUB_SHA:?GITHUB_SHA is required}"
   : "${GITHUB_REF_NAME:?GITHUB_REF_NAME is required}"
   : "${GH_TOKEN:?GH_TOKEN is required}"
+  : "${GITHUB_RUN_ID:?GITHUB_RUN_ID is required}"
 
   if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9] ]]; then
     echo "ERROR: release admission requires a semantic v* tag, got ${GITHUB_REF_NAME}" >&2
@@ -77,23 +113,8 @@ main() {
     exit 1
   fi
 
-  if ! ruleset_summaries="$(gh api "repos/${GITHUB_REPOSITORY}/rulesets?includes_parents=true&per_page=100")"; then
-    echo "ERROR: could not read repository ref-protection rulesets; refusing publication" >&2
-    exit 1
-  fi
-
-  # The collection endpoint returns summary records. Fetch each full ruleset
-  # so conditions, rules, and bypass_actors are checked from the authoritative
-  # detail response. Missing bypass_actors is deliberately rejected by the
-  # predicates because GitHub omits it for callers without write access.
-  if ! rulesets="$(
-    jq -r '.[].id // empty' <<<"${ruleset_summaries}" |
-      while IFS= read -r ruleset_id; do
-        gh api "repos/${GITHUB_REPOSITORY}/rulesets/${ruleset_id}?includes_parents=true"
-      done |
-      jq -s '.'
-  )"; then
-    echo "ERROR: could not read complete repository ref-protection rulesets; refusing publication" >&2
+  if ! rulesets="$(rulesets_from_attestation)"; then
+    echo "ERROR: could not validate trusted repository ref-protection attestation; refusing publication" >&2
     exit 1
   fi
 
@@ -111,7 +132,7 @@ main() {
     echo "ci_run_id=${ci_run_id}" >>"${GITHUB_OUTPUT}"
   fi
 
-  echo "OK: release tag ${GITHUB_REF_NAME} at ${GITHUB_SHA} admitted by dev CI run ${ci_run_id} and protected refs"
+  echo "OK: release tag ${GITHUB_REF_NAME} at ${GITHUB_SHA} admitted by dev CI run ${ci_run_id}, trusted ruleset attestation, and protected refs"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
