@@ -1,12 +1,9 @@
-[workspace]
-resolver = "2"
-
 [package]
 name = "rusty-bubbles"
 exclude = ["POLICIES.md"]
 version = "2.1.0"
 edition = "2021"
-rust-version = "1.92.0"
+rust-version = "1.98.0"
 description = "Cleanroom Rust port of charm.land/bubbles/v2: TUI components for Bubble Tea applications"
 license = "MIT"
 
