@@ -6,15 +6,19 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  publish:
-    name: Publish Crate
+  verify:
+    name: Verify and package release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
@@ -22,11 +26,13 @@ jobs:
           components: clippy, rustfmt
       - name: Verify version and tag match upstream
         run: scripts/verify_upstream_version.sh "$GITHUB_REF_NAME"
+      - name: Verify tag, ancestry, and CI admission
+        id: admission
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/verify_release_admission.sh
       - name: Configure shared Cargo cache
         run: |
-          # The runner image pre-sets CARGO_HOME=$HOME/.cargo; drop the
-          # ambient value so the shared-cache defaults apply (the resolver
-          # rejects it as an uncontained override otherwise).
           unset CARGO_HOME
           . scripts/cargo-env.sh
           configure_shared_cargo_cache_environment
@@ -83,7 +89,7 @@ jobs:
           persist-credentials: false
       - name: Place sibling crates
         run: |
-          mkdir -p ../siblings && true
+          mkdir -p ../siblings
           mv siblings/rusty-bubbletea ../rusty-bubbletea
           mv siblings/rusty-colorprofile ../rusty-colorprofile
           mv siblings/rusty-lipgloss ../rusty-lipgloss
@@ -98,52 +104,133 @@ jobs:
         run: cargo build --all-targets
       - name: Docgen
         run: cargo doc --no-deps
+      - name: Table doctests
+        run: cargo test --doc table --no-fail-fast
       - name: Test (all targets, all integration tests)
         run: cargo test --all-targets
       - name: Upstream mapping verification
         run: ./scripts/verify_mapping.sh
-      # Releases are tag-gated: only pushes of a v* tag publish. crates.io
-      # rejects re-publishing an existing version, so the version-bump gate
-      # in ci.yml keeps every release on a fresh, unreleased version.
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Release-boundary guard tests
+        run: ./scripts/test-release-guards.sh
+      - name: Package release artifacts from a clean source archive
+        id: package
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_RUN_ID: ${{ steps.admission.outputs.ci_run_id }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists; skipping."
+          set -euo pipefail
+          workspace="$RUNNER_TEMP/release-workspace"
+          rm -rf "$workspace"
+          mkdir -p "$workspace/rusty-bubbles"
+          git archive --format=tar "$GITHUB_SHA" | tar -xf - -C "$workspace/rusty-bubbles"
+          for sibling in rusty-bubbletea rusty-colorprofile rusty-lipgloss rusty-testkit rusty-ultraviolet rusty-x-ansi; do
+            mkdir -p "$workspace/$sibling"
+            git -C "$GITHUB_WORKSPACE/../$sibling" archive --format=tar HEAD | tar -xf - -C "$workspace/$sibling"
+          done
+          rm -f "$workspace/rusty-bubbles/.command-whitelist" "$workspace/rusty-bubbles/whitelist-exec.sh" "$workspace/rusty-bubbles/.command-whitelist-log"
+          package_target="$workspace/target"
+          (cd "$workspace/rusty-bubbles" && env -u CARGO_BUILD_BUILD_DIR CARGO_TARGET_DIR="$package_target" cargo package --locked --no-verify --allow-dirty)
+          crate_file="rusty-bubbles-${GITHUB_REF_NAME#v}.crate"
+          crate_path="$package_target/package/$crate_file"
+          test -f "$crate_path"
+          artifact_dir="$RUNNER_TEMP/release-artifacts"
+          rm -rf "$artifact_dir"
+          mkdir -p "$artifact_dir"
+          cp "$crate_path" "$artifact_dir/$crate_file"
+          source_archive="${GITHUB_REPOSITORY##*/}-$GITHUB_REF_NAME.tar.gz"
+          git archive --format=tar.gz --prefix="${GITHUB_REPOSITORY##*/}-$GITHUB_REF_NAME/" -o "$artifact_dir/$source_archive" "$GITHUB_SHA"
+          crate_sha256="$(sha256sum "$artifact_dir/$crate_file" | awk '{print $1}')"
+          source_sha256="$(sha256sum "$artifact_dir/$source_archive" | awk '{print $1}')"
+          jq -n --arg tag "$GITHUB_REF_NAME" --arg commit "$GITHUB_SHA" --arg ci_run_id "$CI_RUN_ID" --arg crate_file "$crate_file" --arg crate_sha256 "$crate_sha256" --arg source_archive "$source_archive" --arg source_sha256 "$source_sha256" '{tag: $tag, commit: $commit, ci_run_id: $ci_run_id, crate_file: $crate_file, crate_sha256: $crate_sha256, source_archive: $source_archive, source_sha256: $source_sha256}' > "$artifact_dir/release-manifest.json"
+      - name: Upload verified release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-artifacts-${{ github.sha }}
+          path: ${{ runner.temp }}/release-artifacts
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish verified release
+    needs: verify
+    if: needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    # Configure this environment with required reviewers in repository settings.
+    environment:
+      name: release
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download verified release artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: release-artifacts-${{ github.sha }}
+          path: artifacts
+      - name: Verify artifact binding and digest
+        run: |
+          set -euo pipefail
+          manifest=artifacts/release-manifest.json
+          test -f "$manifest"
+          tag="$(jq -er .tag "$manifest")"
+          commit="$(jq -er .commit "$manifest")"
+          ci_run_id="$(jq -er .ci_run_id "$manifest")"
+          crate_file="$(jq -er .crate_file "$manifest")"
+          crate_sha256="$(jq -er .crate_sha256 "$manifest")"
+          source_archive="$(jq -er .source_archive "$manifest")"
+          source_sha256="$(jq -er .source_sha256 "$manifest")"
+          test "$tag" = "$GITHUB_REF_NAME"
+          test "$commit" = "$GITHUB_SHA"
+          test "$ci_run_id" -gt 0
+          test "$crate_file" = "rusty-bubbles-${GITHUB_REF_NAME#v}.crate"
+          case "$crate_file" in /*|*..*) exit 1 ;; esac
+          case "$source_archive" in /*|*..*) exit 1 ;; esac
+          test -f "artifacts/$crate_file"
+          test -f "artifacts/$source_archive"
+          test "$crate_sha256" = "$(sha256sum "artifacts/$crate_file" | awk '{print $1}')"
+          test "$source_sha256" = "$(sha256sum "artifacts/$source_archive" | awk '{print $1}')"
+          tar -tzf "artifacts/$source_archive" >/dev/null
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: 1.98.0
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="$(jq -er .tag artifacts/release-manifest.json)"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists; preserving it."
           else
-            gh release create "$GITHUB_REF_NAME" --generate-notes
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
           fi
       - name: Upload source to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          src="${GITHUB_REPOSITORY##*/}-$GITHUB_REF_NAME.tar.gz"
-          # Keep the archive out of the repo working tree so `cargo publish`
-          # sees a clean checkout.
-          git archive --format=tar.gz -o "$RUNNER_TEMP/$src" HEAD
-          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/$src" --clobber
-      - name: Publish to crates.io
-        if: startsWith(github.ref, 'refs/tags/v')
+          set -euo pipefail
+          tag="$(jq -er .tag artifacts/release-manifest.json)"
+          source_archive="$(jq -er .source_archive artifacts/release-manifest.json)"
+          # Existing assets cause a hard failure; replacements are forbidden.
+          gh release upload "$tag" "artifacts/$source_archive" --repo "$GITHUB_REPOSITORY"
+      - name: Publish crate from verified artifact
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
-          if [ -n "${CARGO_REGISTRY_TOKEN}" ]; then
-            # Dev-dependencies are not part of the published crate, but
-            # `cargo publish` resolves them anyway; drop them from the
-            # packaging manifest so sibling dev-deps (which may be
-            # unpublished or cyclically depend on this crate) can't block
-            # the upload. The published crate is unaffected.
-            awk '/^\[dev-dependencies\]/ { in_dev=1 } /^\[/ && !/^\[dev-dependencies\]/ { in_dev=0 } !(in_dev && /^rusty-/) { print }' Cargo.toml > Cargo.toml.publish
-            mv Cargo.toml.publish Cargo.toml
-            # --no-verify: the verify build resolves dependencies from the
-            # registry, but ultraviolet's dev-dependency on lipgloss and
-            # lipgloss's dependency on ultraviolet form a cycle; the full
-            # gates (build, clippy, tests) already ran above.
-            cargo publish --no-verify --allow-dirty
-            git checkout -- Cargo.toml
-          else
-            echo "No CARGO_REGISTRY_TOKEN secret; skipping crates.io publish."
+          set -euo pipefail
+          : "${CARGO_REGISTRY_TOKEN:?CARGO_REGISTRY_TOKEN secret is required for a release}"
+          crate_file="$(jq -er .crate_file artifacts/release-manifest.json)"
+          package_root="$RUNNER_TEMP/verified-crate"
+          rm -rf "$package_root"
+          mkdir -p "$package_root"
+          tar -xzf "artifacts/$crate_file" -C "$package_root"
+          package_dir="$(find "$package_root" -mindepth 1 -maxdepth 1 -type d -name 'rusty-bubbles-*' -print -quit)"
+          test -n "$package_dir"
+          cd "$package_dir"
+          rm -f Cargo.toml.orig
+          if test -f build.rs || grep -qE '^[[:space:]]*build[[:space:]]*=' Cargo.toml; then
+            echo "ERROR: release package contains a build script; review the package before publishing" >&2
+            exit 1
           fi
+          # --no-verify prevents build scripts/tests from running on the
+          # fresh credential-bearing publication runner.
+          cargo publish --no-verify --locked
