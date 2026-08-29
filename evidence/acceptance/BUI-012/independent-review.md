@@ -1,8 +1,9 @@
 # BUI-012 Implementation Evidence
 
-Status: current exact-head implementation evidence for material repair
-`284590fae2a56951e8350e495d375498173851ca`; the R-01 replay and merge
-authorization remain lifecycle gates. This packet is not merge authorization.
+Status: current exact-head implementation evidence for candidate
+`2e85a43cd03b95444a86db90810da10b7d7248d8`; R-01 replay, R-02 replay, and
+merge authorization remain lifecycle gates. This packet is not merge
+authorization.
 
 ## Historical boundary
 
@@ -23,7 +24,7 @@ The rusty-bubbles table now materializes every declared column deterministically
 
 The current pull request change set is:
 
-- `.github/workflows/ci.yml`: runs the exact-head documentation projection check.
+- `.github/workflows/ci.yml`: runs the exact-head documentation projection check and the complete seven-test table doctest selection.
 - `UPSTREAM_MAPPING.md`: records the Rust-side table boundary adaptation.
 - `docs/projection.yaml`: maps the user documentation source to the table module.
 - `docs/src/lib.rs`: documents the table shape contract and contains a compiling user-facing example.
@@ -55,11 +56,12 @@ configuration are imported base changes, not additional BUI-012-owned edits.
 - `cargo clippy --all-targets -- -D warnings`: passed.
 - `cargo doc --no-deps --all-features`: passed without warnings.
 - `cargo test --doc table:: --no-fail-fast`: 6 table doctests passed, including the changed public operations.
+- `cargo test --doc table --no-fail-fast`: 7 table doctests passed, including the module-level user-facing example.
 - `bash ./scripts/verify_docs_projection.sh`: passed; the projection manifest and the `docs/src/lib.rs` example compile against the current library. The same check passed under the CI split `CARGO_TARGET_DIR`/`CARGO_BUILD_BUILD_DIR` layout.
 - `scripts/verify_mapping.sh`: passed in protected CI; the optional local `upstream-go/` checkout is absent as documented by the script.
 - `./scripts/test-release-guards.sh`: passed.
 - `yq '.' .github/workflows/ci.yml`: passed.
-- Protected CI run [`33235506720`](https://github.com/coderbants/rusty-bubbles/actions/runs/33235506720) passed on exact head `284590fae2a56951e8350e495d375498173851ca`: version gate, lint/build/docs/tests, documentation projection, mapping, release guards, and coverage all passed. The PR-only badge-update job was skipped as designed.
+- Protected CI run [`33236464259`](https://github.com/coderbants/rusty-bubbles/actions/runs/33236464259) passed on exact head `2e85a43cd03b95444a86db90810da10b7d7248d8`: version gate, lint/build/docs/tests, documentation projection, seven table doctests, mapping, release guards, and coverage all passed. The PR-only badge-update job was skipped as designed.
 
 The repository-wide `cargo test --doc --no-fail-fast` run remains a known
 out-of-scope baseline failure in the unchanged `src/key.rs` example/API
@@ -69,9 +71,12 @@ projection test pass.
 ## Review boundary
 
 R-01 requested two repairs: refresh this packet after base synchronization and
-add a complete `<user-docs>` contract plus exact-head projection proof. The
-material repairs are present at `284590fae2a56951e8350e495d375498173851ca`;
-the repaired head must be sent back to the same reviewer for confirmation.
+add a complete `<user-docs>` contract plus exact-head projection proof. R-01
+replay passed with no findings on `8f21bb1`. R-02 then identified
+`TST-R02-001`: the module-level table doctest was not protected by CI. The
+protected `cargo test --doc table --no-fail-fast` step now covers all seven
+table doctests on `2e85a43`; the repaired head must be sent back to the Testing
+Specialist for confirmation.
 
 The final independent review, exact-head protected CI, and post-merge absorb
 transition remain owned by the Mutate lifecycle.
